@@ -30,3 +30,12 @@ GRIDS = {
     "L6_fine": dict(layout=6, P_high=[200], P_mid=[77], P_exh=[45, 55], T_in=[320, 360],
         T_turb=[500], split=[35, 45, 50]),
 }
+
+# refinement round 1 (core/refine.py)
+GRIDS.update({
+    'W1_L3': dict(layout=3, P_high=[200], P_low=(77, 85, 2), T_in=(320, 360, 5), split=(30, 48, 1), T_turb=[500]),
+    'W1_L6': dict(layout=6, P_high=[200], P_mid=(77, 85, 4), P_exh=(40, 65, 5), T_in=(320, 360, 10), split=(30, 50, 5), T_turb=[500]),
+    'W1_L5': dict(layout=5, P_high=[200], P_low=[77, 80], T_in=(320, 340, 10), split=(30, 42, 2), P_mid=(90, 110, 10), T_turb=[500]),
+    'W1_L2': dict(layout=2, P_high=[200], P_low=(77, 82, 1), T_in=(320, 360, 5), T_turb=[500]),
+    'W1_L4': dict(layout=4, P_high=[200], P_low=(77, 85, 4), T_in=(320, 340, 10), P_mid=(100, 160, 20), T_turb=[500]),
+})
