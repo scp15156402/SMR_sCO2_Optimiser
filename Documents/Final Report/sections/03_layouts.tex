@@ -1,0 +1,188 @@
+\section{Cycle layouts}\label{sec:layouts}
+
+Six layouts are compared. In every block diagram the upper line is at high pressure and the lower line at low pressure, and the numbers are the state points used in the results. C is a compressor, T the turbine. Each cooler rejects heat to cooling water supplied at \SI{25}{\celsius}.
+
+%---------------------------------------------------------------
+\subsection{Layout 1: simple cycle}
+\begin{figure}[h]\centering
+\begin{tikzpicture}[scale=0.92]
+\def\yt{1.6}
+\draw[fl] (0,0.8)--(0,\yt)--(3,\yt); \draw[fl] (3,\yt)--(6,\yt)--(6,0.8);
+\draw[fl] (6,0.8)--(6,0)--(3,0); \draw[fl] (3,0)--(0,0)--(0,0.8);
+\pic[rotate=90] at (0,0.8) {comp}; \node[nm] at (-0.75,0.8) {C};
+\pic[rotate=-90] at (6,0.8) {turb}; \node[nm] at (6.75,0.8) {T};
+\node[box] at (3,\yt) {Heater}; \node[box] at (3,0) {Cooler};
+\node[st] at (1.2,\yt+0.22) {2}; \node[st] at (4.8,\yt+0.22) {3};
+\node[st] at (4.8,-0.22) {4}; \node[st] at (1.2,-0.22) {1};
+\end{tikzpicture}
+\caption{Layout 1, simple cycle.}
+\end{figure}
+
+Compress, heat, expand, reject. No heat is recovered. The turbine exhaust is still hot, and all of that heat goes to the cooler. \emph{Expected:} the lowest efficiency and the largest cooler duty, but the least hardware. It is the reference that shows what recuperation is worth.
+
+\code{\path{brayton_cycle/simple.py}}
+
+%---------------------------------------------------------------
+\subsection{Layout 2: recuperated cycle (the baseline)}
+\begin{figure}[h]\centering
+\begin{tikzpicture}[scale=0.92]
+\def\yt{1.6}
+\draw[fl] (0,0.8)--(0,\yt)--(3.2,\yt); \draw[fl] (4.8,\yt)--(7,\yt); \draw[fl] (7,\yt)--(10,\yt)--(10,0.8);
+\draw[fl] (10,0.8)--(10,0)--(4.8,0); \draw[fl] (3.2,0)--(1.6,0); \draw[fl] (1.6,0)--(0,0)--(0,0.8);
+\node[hx,minimum width=1.6cm,minimum height=2.3cm] at (4,0.8) {Recup.};
+\pic[rotate=90] at (0,0.8) {comp}; \node[nm] at (-0.75,0.8) {C};
+\pic[rotate=-90] at (10,0.8) {turb}; \node[nm] at (10.75,0.8) {T};
+\node[box] at (7,\yt) {Heater}; \node[box] at (1.6,0) {Cooler};
+\node[st] at (1.6,\yt+0.22) {2}; \node[st] at (5.7,\yt+0.22) {3}; \node[st] at (8.6,\yt+0.22) {4};
+\node[st] at (7.4,-0.22) {5}; \node[st] at (2.6,-0.22) {6}; \node[st] at (0.7,-0.22) {1};
+\end{tikzpicture}
+\caption{Layout 2, recuperated cycle.}
+\end{figure}
+
+A recuperator uses the turbine exhaust to preheat the compressed stream, so the reactor supplies less heat for the same work. \emph{Expected:} a large gain over layout~1, limited by the heat-capacity mismatch of Section~2: the cold stream needs more heat per kelvin than the hot stream gives up, so the hot stream leaves the recuperator well above the cold inlet temperature and that heat is rejected.
+
+\code{\path{brayton_cycle/recuperated.py}}
+
+%---------------------------------------------------------------
+\subsection{Layout 3: recompression cycle}
+\begin{figure}[h]\centering
+\begin{tikzpicture}[scale=0.92]
+\def\yt{1.6}
+\draw[fl] (0,0.8)--(0,\yt)--(3.4,\yt); \draw[fl] (4.6,\yt)--(5.4,\yt); \draw[fl] (5.4,\yt)--(6.2,\yt);
+\draw[fl] (7.4,\yt)--(9,\yt); \draw[fl] (9,\yt)--(10.8,\yt)--(10.8,0.8);
+\draw[fl] (10.8,0.8)--(10.8,0)--(7.4,0); \draw[fl] (6.2,0)--(4.6,0); \draw[fl] (3.4,0)--(2.6,0);
+\draw[fl] (2.6,0)--(1.5,0); \draw[fl] (1.5,0)--(0,0)--(0,0.8);
+\draw[fl] (2.6,0)--(2.6,-1.3)--(4,-1.3); \draw[fl] (4,-1.3)--(5.4,-1.3)--(5.4,\yt);
+\node[hx,minimum width=1.2cm,minimum height=2.3cm] at (4,0.8) {LTR};
+\node[hx,minimum width=1.2cm,minimum height=2.3cm] at (6.8,0.8) {HTR};
+\pic[rotate=90] at (0,0.8) {comp}; \node[nm] at (-0.85,0.8) {MC};
+\pic at (4,-1.3) {comp}; \node[nm] at (4,-1.95) {RC};
+\pic[rotate=-90] at (10.8,0.8) {turb}; \node[nm] at (11.55,0.8) {T};
+\node[box] at (9,\yt) {Heater}; \node[box] at (1.5,0) {Cooler};
+\node[dot] at (2.6,0) {}; \node[dot] at (5.4,\yt) {};
+\node[st] at (1.6,\yt+0.22) {2}; \node[st] at (5.0,\yt+0.22) {3}; \node[st] at (5.8,\yt+0.22) {4};
+\node[st] at (8.0,\yt+0.22) {5}; \node[st] at (10.0,\yt+0.22) {6};
+\node[st] at (9.2,-0.22) {7}; \node[st] at (5.75,-0.22) {8}; \node[st] at (3.0,0.22) {9};
+\node[st] at (0.6,-0.22) {1}; \node[st] at (5.65,-1.05) {10};
+\node[nm,anchor=north] at (2.2,-0.45) {$x$};
+\end{tikzpicture}
+\caption{Layout 3, recompression. A fraction $x$ of the flow bypasses the cooler and the main compressor (MC) and is compressed by the recompressor (RC).}\label{fig:l3}
+\end{figure}
+
+The recuperator is divided into a low-temperature part (LTR) and a high-temperature part (HTR). After the LTR, a fraction $x$ of the low-pressure flow is sent to a recompressor without being cooled, and rejoins the main flow between the two recuperators. The cold side of the LTR then carries only $(1-x)$ of the flow, which brings its capacity rate down towards that of the hot side. \emph{Expected:} higher efficiency than layout~2, because more heat is recovered and less is rejected. The cost is one more compressor, a second recuperator, and a recompressor that works on warm, less dense fluid. Those two effects pull in opposite directions, so an optimum split fraction should exist.
+
+\code{\path{brayton_cycle/recompression.py}}
+
+%---------------------------------------------------------------
+\subsection{Layout 4: recuperated cycle with intercooling}
+\begin{figure}[h]\centering
+\begin{tikzpicture}[scale=0.92]
+\def\yt{3.0}
+\draw[fl] (0,0)--(0,1.05); \draw[fl] (0,0.9)--(0,2.05);
+\draw[fl] (0,2.5)--(0,\yt)--(3.2,\yt); \draw[fl] (4.8,\yt)--(7,\yt); \draw[fl] (7,\yt)--(10,\yt)--(10,1.5);
+\draw[fl] (10,1.5)--(10,0)--(4.8,0); \draw[fl] (3.2,0)--(1.7,0); \draw[ln] (1.7,0)--(0,0);
+\node[hx,minimum width=1.6cm,minimum height=3.7cm] at (4,1.5) {Recup.};
+\pic[rotate=90] at (0,0.55) {comp}; \node[nm] at (-0.85,0.55) {C1};
+\node[box] at (0,1.5) {Intercooler};
+\pic[rotate=90] at (0,2.45) {comp}; \node[nm] at (-0.85,2.45) {C2};
+\pic[rotate=-90] at (10,1.5) {turb}; \node[nm] at (10.75,1.5) {T};
+\node[box] at (7,\yt) {Heater}; \node[box] at (1.7,0) {Cooler};
+\node[st] at (1.6,\yt+0.22) {4}; \node[st] at (5.7,\yt+0.22) {5}; \node[st] at (8.6,\yt+0.22) {6};
+\node[st] at (7.4,-0.22) {7}; \node[st] at (2.6,-0.22) {8}; \node[st] at (0.75,-0.22) {1};
+\node[st] at (0.3,1.0) {2}; \node[st] at (0.3,2.0) {3};
+\end{tikzpicture}
+\caption{Layout 4, recuperated cycle with two compression stages and an intercooler at $\Pm$.}
+\end{figure}
+
+Compression is done in two stages with cooling between them, so the second stage compresses denser fluid and takes less work. \emph{Expected:} lower compressor work than layout~2, but a smaller benefit than in an ideal-gas cycle, because \scotwo{} compression work is already small. Intercooling also lowers the temperature at which the cold stream enters the recuperator. Whether the net effect is a gain is something to compute. The cost is one more compressor and one more cooler.
+
+\code{\path{brayton_cycle/intercooled.py}}
+
+%---------------------------------------------------------------
+\subsection{Layout 5: recompression cycle with intercooling}
+This is the recompression cycle (layout~3) with the main compression split into two intercooled stages. The recompressor is unchanged.
+\begin{figure}[h]\centering
+\begin{tikzpicture}[scale=0.92]
+\def\yt{3.0}
+\draw[fl] (0,0)--(0,1.05); \draw[fl] (0,0.9)--(0,2.05);
+\draw[fl] (0,2.5)--(0,\yt)--(3.4,\yt); \draw[fl] (4.6,\yt)--(5.4,\yt); \draw[fl] (5.4,\yt)--(6.2,\yt);
+\draw[fl] (7.4,\yt)--(9,\yt); \draw[fl] (9,\yt)--(10.8,\yt)--(10.8,1.5);
+\draw[fl] (10.8,1.5)--(10.8,0)--(7.4,0); \draw[fl] (6.2,0)--(4.6,0); \draw[fl] (3.4,0)--(2.6,0);
+\draw[fl] (2.6,0)--(1.5,0); \draw[ln] (1.5,0)--(0,0);
+\draw[fl] (2.6,0)--(2.6,-1.3)--(4,-1.3); \draw[fl] (4,-1.3)--(5.4,-1.3)--(5.4,\yt);
+\node[hx,minimum width=1.2cm,minimum height=3.7cm] at (4,1.5) {LTR};
+\node[hx,minimum width=1.2cm,minimum height=3.7cm] at (6.8,1.5) {HTR};
+\pic[rotate=90] at (0,0.55) {comp}; \node[nm] at (-0.85,0.55) {C1};
+\node[box] at (0,1.5) {Intercooler};
+\pic[rotate=90] at (0,2.45) {comp}; \node[nm] at (-0.85,2.45) {C2};
+\pic at (4,-1.3) {comp}; \node[nm] at (4,-1.95) {RC};
+\pic[rotate=-90] at (10.8,1.5) {turb}; \node[nm] at (11.55,1.5) {T};
+\node[box] at (9,\yt) {Heater}; \node[box] at (1.5,0) {Cooler};
+\node[dot] at (2.6,0) {}; \node[dot] at (5.4,\yt) {};
+\node[st] at (1.6,\yt+0.22) {4}; \node[st] at (5.0,\yt+0.22) {5}; \node[st] at (5.8,\yt+0.22) {6};
+\node[st] at (8.0,\yt+0.22) {7}; \node[st] at (10.0,\yt+0.22) {8};
+\node[st] at (9.2,-0.22) {9}; \node[st] at (5.75,-0.22) {10}; \node[st] at (3.0,0.22) {11};
+\node[st] at (0.75,-0.22) {1}; \node[st] at (0.3,1.0) {2}; \node[st] at (0.3,2.0) {3}; \node[st] at (5.65,-1.05) {12};
+\node[nm,anchor=north] at (2.2,-0.45) {$x$};
+\end{tikzpicture}
+\caption{Layout 5, recompression with an intercooled main compressor.}
+\end{figure}
+
+This combines layouts~3 and~4. \emph{Expected:} the efficiency of recompression with slightly lower main-compressor work. It carries the most turbomachinery of the two-pressure layouts (three compressors) and two coolers, so it tests whether the last increment of efficiency pays for its hardware.
+
+\code{\path{brayton_cycle/recomp_intercooled.py}}
+
+%---------------------------------------------------------------
+\subsection{Layout 6: partial cooling cycle (Angelino)}
+\begin{figure}[h]\centering
+\begin{tikzpicture}[scale=0.92]
+\def\yt{1.6}
+\draw[fl] (0,0.8)--(0,\yt)--(6.2,\yt); \draw[fl] (7.4,\yt)--(8.2,\yt); \draw[fl] (8.2,\yt)--(9.0,\yt);
+\draw[fl] (10.2,\yt)--(11.8,\yt); \draw[fl] (11.8,\yt)--(13.4,\yt)--(13.4,0.8);
+\draw[fl] (13.4,0.8)--(13.4,0)--(10.2,0); \draw[fl] (9.0,0)--(7.4,0); \draw[fl] (6.2,0)--(5.0,0);
+\draw[fl] (5.0,0)--(3.4,0); \draw[fl] (3.4,0)--(2.3,0); \draw[fl] (2.3,0)--(1.2,0); \draw[fl] (1.2,0)--(0,0)--(0,0.8);
+\draw[fl] (2.3,0)--(2.3,-1.3)--(5.3,-1.3); \draw[fl] (5.3,-1.3)--(8.2,-1.3)--(8.2,\yt);
+\node[hx,minimum width=1.2cm,minimum height=2.3cm] at (6.8,0.8) {LTR};
+\node[hx,minimum width=1.2cm,minimum height=2.3cm] at (9.6,0.8) {HTR};
+\pic[rotate=90] at (0,0.8) {comp}; \node[nm] at (-0.85,0.8) {MC};
+\pic[rotate=180] at (3.4,0) {comp}; \node[nm] at (3.4,0.65) {PC};
+\pic at (5.3,-1.3) {comp}; \node[nm] at (5.3,-1.95) {RC};
+\pic[rotate=-90] at (13.4,0.8) {turb}; \node[nm] at (14.15,0.8) {T};
+\node[box] at (11.8,\yt) {Heater};
+\node[box,minimum width=9mm] at (5.0,0) {Cooler 1}; \node[box,minimum width=9mm] at (1.2,0) {Cooler 2};
+\node[dot] at (2.3,0) {}; \node[dot] at (8.2,\yt) {};
+\node[st] at (3.0,\yt+0.22) {2}; \node[st] at (7.8,\yt+0.22) {3}; \node[st] at (8.6,\yt+0.22) {4};
+\node[st] at (10.8,\yt+0.22) {5}; \node[st] at (12.7,\yt+0.22) {6};
+\node[st] at (11.8,-0.22) {7}; \node[st] at (8.55,-0.22) {8}; \node[st] at (5.92,0.22) {9};
+\node[st] at (4.05,-0.25) {10}; \node[st] at (2.75,0.22) {11}; \node[st] at (0.5,-0.22) {1}; \node[st] at (8.5,-1.05) {12};
+\node[nm,anchor=north] at (1.95,-0.45) {$x$};
+\end{tikzpicture}
+\caption{Layout 6, partial cooling. The turbine exhausts to $\Pe$, below the main-compressor inlet pressure $\Pm$. A pre-compressor (PC) raises the full flow from $\Pe$ to $\Pm$ before the split.}
+\end{figure}
+
+This layout, due to Angelino~\cite{angelino} and analysed for nuclear use by Dostal~\cite{dostal}, has three pressure levels. The turbine expands to a pressure $\Pe$ below the main-compressor inlet. The full flow is cooled, raised to $\Pm$ by a pre-compressor, and then split as in recompression: one part is cooled again and goes to the main compressor, the other goes to the recompressor. \emph{Expected:} more turbine work per kilogram, because of the larger expansion ratio, with the mismatch in the LTR reduced as in layout~3. The cost is three compressors and two coolers.
+
+\code{\path{brayton_cycle/partial_cooling.py}}
+
+%---------------------------------------------------------------
+\subsection{Summary of hardware and free variables}
+
+\begin{table}[h]\centering\small\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{clcccl}
+\toprule
+\# & Layout & Compressors & Recuperators & Coolers & Swept variables\\
+\midrule
+1 & Simple & 1 & 0 & 1 & $\Ph,\ \Pl,\ \Tin,\ \Tt$\\
+2 & Recuperated & 1 & 1 & 1 & $\Ph,\ \Pl,\ \Tin,\ \Tt$\\
+3 & Recompression & 2 & 2 & 1 & $\Ph,\ \Pl,\ \Tin,\ \Tt,\ x$\\
+4 & Recuperated + intercooling & 2 & 1 & 2 & $\Ph,\ \Pl,\ \Tin,\ \Tt,\ \Pm$\\
+5 & Recompression + intercooling & 3 & 2 & 2 & $\Ph,\ \Pl,\ \Tin,\ \Tt,\ \Pm,\ x$\\
+6 & Partial cooling & 3 & 2 & 2 & $\Ph,\ \Pm,\ \Pe,\ \Tin,\ \Tt,\ x$\\
+\bottomrule
+\end{tabular}
+\caption{Hardware count and operating variables of each layout. $\Ph$ is the compressor outlet pressure, $\Pl$ the main-compressor inlet pressure, $\Tin$ the compressor inlet temperature, $\Tt$ the turbine inlet temperature and $x$ the split fraction.}\label{tab:layouts}
+\end{table}
+
+Pressure ratios are not set directly. Each compressor's ratio follows from the pressure levels on either side of it.
+
+\code{\path{helpers/builders.py} (numbers for each layout), \path{grids.py} (swept variables)}

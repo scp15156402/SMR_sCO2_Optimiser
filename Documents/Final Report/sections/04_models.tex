@@ -1,0 +1,97 @@
+\section{Thermodynamic model}\label{sec:model}
+
+Each layout is a set of components connected by streams. A stream is described by its pressure and specific enthalpy. All other properties come from CoolProp. This section gives the model of each component. Appendix~\ref{app:numerics} gives the numerical details and Appendix~\ref{app:validation} the validation.
+
+\subsection{Compressor and turbine}
+The isentropic outlet enthalpy $h_s$ is the enthalpy at the outlet pressure and the inlet entropy. The actual outlet follows from the isentropic efficiency:
+\begin{align}
+\text{compressor:}\quad h_\mathrm{out} &= h_\mathrm{in} + \frac{h_s - h_\mathrm{in}}{\eta_c}, &
+\text{turbine:}\quad h_\mathrm{out} &= h_\mathrm{in} - \eta_t\,(h_\mathrm{in} - h_s).
+\end{align}
+
+\code{\path{cycles/blocks/compressor.py}, \path{cycles/blocks/turbine.py}, \path{cycles/physics/isentropic.py}}
+
+\subsection{Heater and mass flow}
+The heater raises the stream to the turbine inlet temperature $\Tt$ at constant pressure. The reactor power is fixed, so the mass flow follows from the heater's enthalpy rise:
+\begin{equation}
+\dot m = \frac{\dot Q_\mathrm{th}}{h_\mathrm{heater,out} - h_\mathrm{heater,in}}, \qquad \dot Q_\mathrm{th} = \SI{100}{MW}.
+\end{equation}
+
+\code{\path{cycles/blocks/heater.py}, \path{cycles/solve.py}}
+
+\subsection{Recuperator}\label{sec:recup}
+\paragraph{Effectiveness.} With a varying $c_p$, the maximum heat transfer has to be written in enthalpy. Two limits apply: the hot stream cannot leave colder than the cold stream enters, and the cold stream cannot leave hotter than the hot stream enters.
+\begin{equation}
+\dot Q_\mathrm{max} = \min\Big[\ \dot m_h\big(h_{h,\mathrm{in}} - h(P_h,\,T_{c,\mathrm{in}})\big),\ \ \dot m_c\big(h(P_c,\,T_{h,\mathrm{in}}) - h_{c,\mathrm{in}}\big)\Big]
+\end{equation}
+The effectiveness is $\varepsilon = \dot Q/\dot Q_\mathrm{max}$, and it is fixed at the given baseline value, $\varepsilon = 0.90$. The duty $\dot Q = \varepsilon\,\dot Q_\mathrm{max}$ then gives both outlet enthalpies by energy balance.
+
+\paragraph{Pinch.} The minimum temperature difference can occur inside the exchanger, not only at an end, because $c_p$ varies. The exchanger is divided into $N = 100$ slices of equal heat duty. At each of the $N+1$ boundaries the enthalpy of both streams is known from the energy balance, and the temperatures follow from $T(P,h)$. The pinch is the smallest temperature difference found:
+\begin{equation}
+\Delta T_\mathrm{pinch} = \min_{j}\,\big(T_{h,j} - T_{c,j}\big).
+\end{equation}
+A design with $\Delta T_\mathrm{pinch} < \SI{5}{K}$ in any recuperator is rejected as infeasible.
+
+\paragraph{Conductance.} A single log-mean temperature difference is valid only when $c_p$ is constant. Here each slice is short enough to treat that way, and the slice conductances are added:
+\begin{equation}
+UA = \sum_{j=1}^{N} \frac{\Delta \dot Q}{\Delta T_{\mathrm{lm},j}}, \qquad
+\Delta T_{\mathrm{lm},j} = \frac{\Delta T_j - \Delta T_{j-1}}{\ln\left(\Delta T_j/\Delta T_{j-1}\right)}, \qquad \Delta\dot Q = \frac{\dot Q}{N}.
+\end{equation}
+$UA$ is the measure of exchanger size used for mass.
+
+\code{\path{cycles/blocks/heat_exchanger.py}, \path{cycles/physics/hx_limits.py}, \path{cycles/physics/hx_profile.py}, \path{cycles/physics/hx_sizing.py}}
+
+\subsection{Coolers}\label{sec:cooler}
+Each cooler brings the \cotwo{} to the compressor inlet temperature $\Tin$, so its duty is fixed by the cycle. The cooling-water supply temperature is given (\SI{25}{\celsius}) but not the water flow, and the size of the cooler depends on that flow. More water keeps the water colder, which widens the temperature difference and shrinks the exchanger.
+
+The water flow is set by a design rule: \emph{the minimum temperature difference between \cotwo{} and water is \SI{5}{K}}. For a trial water flow $\dot m_w$, the water outlet enthalpy follows from the energy balance, and the temperature profile is built in the same $N$ equal-duty slices as the recuperator. The water flow is adjusted by bisection until the smallest temperature difference equals \SI{5}{K}. The cooler's $UA$ is then computed from that profile with the same summation as above.
+
+The order of calculation is: duty (from the cycle) $\rightarrow$ water flow (from the pinch rule) $\rightarrow$ temperature profile $\rightarrow$ $UA$. No value has to be guessed.
+
+\code{\path{cycles/blocks/cooler.py}, \path{cycles/physics/coolant.py}}
+
+\subsection{Pressures}
+Pressure drops are not modelled (Section~\ref{sec:limits}). The heater, both sides of each recuperator and the coolers are at constant pressure, and only the compressors and the turbine change it. The compressor outlet, heater and turbine inlet are therefore all at $\Ph$, and the limit of \SI{20}{MPa} applies to $\Ph$.
+
+\code{\path{cycles/passes/pressure.py}}
+
+\subsection{Flow splitting and mixing}
+\paragraph{Splitter.} A splitter divides one stream into two at the same state. Nothing thermodynamic happens in it: both outlets keep the inlet pressure and enthalpy, and only the mass flow is divided. With $\dot m$ the inlet flow and $x$ the split fraction sent to the recompressor,
+\begin{equation}
+\dot m_\mathrm{main} = (1 - x)\,\dot m, \qquad \dot m_\mathrm{RC} = x\,\dot m, \qquad h_\mathrm{main} = h_\mathrm{RC} = h_\mathrm{in}.
+\end{equation}
+
+\paragraph{Mixer.} A mixer joins two streams at the same pressure. It is adiabatic and does no work, so the energy balance gives the outlet enthalpy as the flow-weighted mean of the inlets:
+\begin{equation}
+\dot m_\mathrm{out} = \dot m_1 + \dot m_2, \qquad h_\mathrm{out} = \frac{\dot m_1 h_1 + \dot m_2 h_2}{\dot m_1 + \dot m_2}.
+\end{equation}
+In the recompression cycle the mixer joins the main flow leaving the low-temperature recuperator with the recompressor outlet. The two are generally at different temperatures, and the outlet temperature is found from $(P, h_\mathrm{out})$ through the property routines. The solver checks that the inlet pressures agree, since a mismatch would mean the layout is wired wrongly.
+
+\paragraph{Why the flow-splitting layouts are iterative.} In the simple and recuperated layouts every component can be evaluated in one pass, each after the components that feed it. In layouts~3, 5 and~6 this is not possible, because the two recuperators and the mixer form a loop. In the recompression cycle (Figure~\ref{fig:l3}):
+\begin{itemize}
+  \item the low-temperature recuperator needs its hot inlet, which is the hot outlet of the high-temperature recuperator;
+  \item the high-temperature recuperator needs its cold inlet, which is the mixer outlet;
+  \item the mixer needs the cold outlet of the low-temperature recuperator and the recompressor outlet, and the recompressor takes its inlet from the hot outlet of the low-temperature recuperator.
+\end{itemize}
+Each of the three needs the result of another before it can be evaluated. The turbine is outside the loop: its inlet is fixed by $\Ph$ and $\Tt$, so its outlet, which is the hot inlet of the high-temperature recuperator, is known from the start.
+
+\paragraph{How the loop is solved.} The loop is broken by guessing one stream, the hot inlet of the low-temperature recuperator, and solved by successive substitution:
+\begin{enumerate}
+  \item Guess the enthalpy of that stream. The first guess is taken at a temperature a quarter of the way from the compressor inlet temperature to the turbine inlet temperature, which places it in the right region of the property surface.
+  \item Evaluate every component in order around the cycle with this guess: low-temperature recuperator, splitter, cooler and recompressor, mixer, high-temperature recuperator.
+  \item The high-temperature recuperator returns a new value of the guessed enthalpy. Compare it with the guess.
+  \item If the relative change is below $10^{-8}$, stop. Otherwise replace the guess with the new value and repeat from step~2.
+\end{enumerate}
+The iteration converges because the loop corrects itself: a guess that is too high returns a lower value, and a guess that is too low returns a higher one. It typically settles in about thirty passes. A design that does not converge within 200 passes is flagged and recorded as not solved, rather than stopping the sweep. Layouts~5 and~6 contain the same recuperator--mixer loop and are solved the same way.
+
+\code{\path{cycles/blocks/splitter.py}, \path{cycles/blocks/mixer.py}, \path{cycles/physics/mixing.py}, \path{cycles/passes/flow.py}, \path{cycles/passes/ordering.py}, \path{cycles/passes/tear.py}}
+
+\subsection{Cycle performance}
+\begin{align}
+\eta &= \frac{\dot W_\mathrm{turb} - \sum \dot W_\mathrm{comp}}{\dot Q_\mathrm{th}}, &
+\eta_\mathrm{Carnot} &= 1 - \frac{\Tin}{\Tt}\ \ \text{(in kelvin)}, &
+\eta_\mathrm{II} &= \frac{\eta}{\eta_\mathrm{Carnot}}.
+\end{align}
+The Carnot efficiency is evaluated for each design from its own turbine inlet and compressor inlet temperatures. The second-law efficiency $\eta_\mathrm{II}$ is reported and not optimised.
+
+\code{\path{cycles/result.py}, \path{helpers/checks.py}}

@@ -1,0 +1,65 @@
+\section{Validation}\label{app:validation}
+
+\subsection{Against a closed-form solution}
+With an ideal-gas property model in place of CoolProp, the solver reproduces the air-standard Brayton cycle formulas for efficiency, net work, heat input and back-work ratio to within the test tolerance of $10^{-4}$ (relative). This checks the cycle algebra independently of the \cotwo{} properties.
+
+\code{\path{tests/test_solver.py}}
+
+\subsection{Against published \scotwo{} work}
+\begin{table}[!htbp]\centering\small
+\begin{tabular}{llll}
+\toprule
+Check & Reference & Published & This solver\\
+\midrule
+State table, enthalpy (worst error) & Dostal~\cite{dostal}, Table 10.2 & -- & 0.0015\%\\
+State table, entropy (worst error) & Dostal & -- & 0.39\%\\
+Compressor outlet, $\eta_c = 0.89$ & Dostal & \SI{327.26}{kJ/kg} & \SI{327.26}{kJ/kg}\\
+Turbine outlet, $\eta_t = 0.90$ & Dostal & \SI{914.45}{kJ/kg} & \SI{914.46}{kJ/kg}\\
+Recompression cycle efficiency & Kim et al.~\cite{kim} & 44.67\% & 44.669\%\\
+Optimum split fraction & Kim et al. & 0.307 & 0.307\\
+Optimum pressure ratio & Kim et al. & 2.6 & 2.6\\
+\bottomrule
+\end{tabular}
+\caption{Comparison with published values. The two optima were found by sweeping around the published value and confirming that the maximum falls on it.}
+\end{table}
+
+\code{\path{tests/test_solver.py}}
+
+\subsection{Independent recalculation of one design}
+The recuperated cycle at $\Ph = \SI{20}{MPa}$, $\Pl = \SI{7.7}{MPa}$, $\Tin = \SI{32}{\celsius}$, $\Tt = \SI{500}{\celsius}$ was recomputed in a separate short script that uses only CoolProp property calls and none of the solver's code, with 1000 slices per exchanger. Table~\ref{tab:indep} compares the two and Table~\ref{tab:states} gives the state points.
+
+\begin{table}[!htbp]\centering\small
+\begin{tabular}{lrr}
+\toprule
+Quantity & Solver ($N=100$) & Independent ($N=1000$)\\
+\midrule
+Thermal efficiency & 0.3271985 & 0.3271985\\
+Mass flow (\si{kg/s}) & 341.48 & 341.48\\
+Recuperator $UA$ (\si{kW/K}) & 1669.53 & 1669.56\\
+Recuperator pinch (\si{K}) & 25.14 & 25.14\\
+Cooler $UA$ (\si{kW/K}) & 7692.51 & 7693.14\\
+Cooler pinch (\si{K}) & 5.000 & 5.000\\
+\bottomrule
+\end{tabular}
+\caption{Solver against an independent recalculation.}\label{tab:indep}
+\end{table}
+
+\begin{table}[!htbp]\centering\small
+\begin{tabular}{clrrrr}
+\toprule
+State & Location & $P$ (\si{MPa}) & $T$ (\si{\celsius}) & $h$ (\si{kJ/kg}) & $s$ (\si{kJ/kg.K})\\
+\midrule
+1 & Compressor inlet & 7.7 & 32.00 & 306.23 & 1.3463\\
+2 & Compressor outlet & 20.0 & 60.90 & 326.75 & 1.3531\\
+3 & Heater inlet & 20.0 & 262.63 & 680.45 & 2.2107\\
+4 & Turbine inlet & 20.0 & 500.00 & 973.29 & 2.6636\\
+5 & Turbine outlet & 7.7 & 390.60 & 856.95 & 2.6832\\
+6 & Cooler inlet & 7.7 & 86.04 & 503.26 & 1.9655\\
+\bottomrule
+\end{tabular}
+\caption{State points of the recalculated design (layout~2 numbering).}\label{tab:states}
+\end{table}
+
+From these states: compressor work \SI{20.52}{kJ/kg}, turbine work \SI{116.34}{kJ/kg}, heat input \SI{292.84}{kJ/kg}, so $\eta = (116.34 - 20.52)/292.84 = 0.3272$. In the recuperator the hot-side limit binds (\SI{393.0}{kJ/kg} against \SI{512.3}{kJ/kg} for the cold side), which is the heat-capacity mismatch of Section~2 in numbers. The cooler rejects \SI{67.3}{MW} to \SI{1397}{kg/s} of water, which leaves at \SI{36.5}{\celsius}.
+
+\code{\path{independent_check.py} (supplied with this report)}

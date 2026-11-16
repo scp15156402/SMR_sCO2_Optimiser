@@ -1,0 +1,55 @@
+\section{Working fluid: why real-gas properties are needed}
+
+The ideal-gas relations ($Pv = RT$, constant $c_p$) do not hold for \cotwo{} near its critical point. Two property plots show why, and both matter for the cycle.
+
+\paragraph{Compression work is low.} Figure~\ref{fig:z} shows the compressibility factor $Z = Pv/RT$ along the \SI{7.7}{MPa} isobar. An ideal gas has $Z = 1$. At the given minimum compressor inlet state (\SI{32}{\celsius}, \SI{7.7}{MPa}), $Z = 0.22$ and the density is \SI{602}{kg/m^3}, closer to a liquid than a gas. Compressor work is $\int v\,dP$, so a dense fluid takes little work to compress.
+
+For isentropic compression from \SI{7.7}{MPa} to \SI{20}{MPa} starting at \SI{32}{\celsius}:
+\begin{center}
+\begin{tabular}{lS[table-format=2.1]}
+\toprule
+Method & {Specific work (\si{kJ/kg})}\\
+\midrule
+Real-fluid properties (CoolProp) & 18.3\\
+Ideal gas, constant $c_p$ ($k = 1.285$) & 61.3\\
+\bottomrule
+\end{tabular}
+\end{center}
+The ideal-gas formula overstates the work by a factor of 3.4. A cycle model built on it would be wrong where it matters most.
+
+\paragraph{Specific heat varies strongly.} Figure~\ref{fig:cp} shows $c_p$ on the low-pressure side (\SI{7.7}{MPa}) and the high-pressure side (\SI{20}{MPa}). Near the critical point, $c_p$ at \SI{7.7}{MPa} peaks sharply (about \SI{75}{kJ/kg.K} at \SI{32.9}{\celsius}). Between roughly \SI{60}{\celsius} and \SI{250}{\celsius}, which is the range a recuperator works in, the high-pressure stream has a higher $c_p$ than the low-pressure stream. For example, at the reference design point of Appendix~\ref{app:validation} the cold stream enters the recuperator at \SI{61}{\celsius} with $c_p = \SI{2.51}{kJ/kg.K}$, while the hot stream leaves at \SI{86}{\celsius} with $c_p = \SI{1.41}{kJ/kg.K}$.
+
+With equal mass flow on both sides, the hot stream cannot supply enough heat to bring the cold stream up to its temperature. This is the heat-capacity mismatch that limits the simple recuperated cycle, and it is the reason the flow-splitting layouts of Section~\ref{sec:layouts} exist.
+
+\paragraph{Consequence for the model.} Every state in this work is computed from real-fluid properties using CoolProp~\cite{coolprop}, which implements the Span--Wagner equation of state for \cotwo~\cite{spanwagner} and the IAPWS-95 formulation for water~\cite{iapws}. Heat-exchanger limits are written in enthalpy, not in temperature with a constant $c_p$.
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=\textwidth,height=5.6cm,xlabel={Temperature (\si{\celsius})},ylabel={$Z$},
+  xmin=30,xmax=200,ymin=0,ymax=1.05,grid=major,grid style={gray!25},tick label style={font=\footnotesize},label style={font=\footnotesize}]
+\addplot[thick] table[x=T,y=Z]{data/z.dat};
+\addplot[dashed] coordinates {(30,1) (200,1)};
+\node[font=\scriptsize,anchor=south east] at (axis cs:198,1.0) {ideal gas};
+\node[font=\scriptsize,anchor=west] at (axis cs:36,0.2) {\SI{32}{\celsius}: $Z=0.22$};
+\end{axis}
+\end{tikzpicture}
+\caption{Compressibility factor at \SI{7.7}{MPa}.}\label{fig:z}
+\end{subfigure}\hfill
+\begin{subfigure}{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=\textwidth,height=5.6cm,xlabel={Temperature (\si{\celsius})},ylabel={$c_p$ (\si{kJ/kg.K})},
+  xmin=30,xmax=400,ymode=log,ymin=0.8,ymax=100,grid=major,grid style={gray!25},
+  tick label style={font=\footnotesize},label style={font=\footnotesize},legend style={font=\scriptsize,draw=none,at={(0.97,0.95)},anchor=north east}]
+\addplot[thick] table[x=T,y=cp77]{data/cp.dat};
+\addplot[thick,dashed] table[x=T,y=cp200]{data/cp.dat};
+\legend{\SI{7.7}{MPa},\SI{20}{MPa}}
+\end{axis}
+\end{tikzpicture}
+\caption{Specific heat on the two pressure levels (log scale).}\label{fig:cp}
+\end{subfigure}
+\caption{Real-fluid behaviour of \cotwo{} near the critical point, from CoolProp.}
+\end{figure}

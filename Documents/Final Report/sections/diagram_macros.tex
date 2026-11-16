@@ -1,0 +1,18 @@
+% Shared drawing styles for the cycle block diagrams.
+% Every diagram is a loop: high-pressure line on top, low-pressure line below.
+\tikzset{
+  fl/.style={line width=0.6pt, postaction={decorate},
+     decoration={markings, mark=at position 0.55 with {\arrow{Latex[length=5pt]}}}},
+  ln/.style={line width=0.6pt},
+  box/.style={draw, fill=white, minimum width=11mm, minimum height=6mm, font=\scriptsize, inner sep=2pt},
+  hx/.style={draw, fill=gray!12, font=\scriptsize, inner sep=2pt},
+  st/.style={font=\scriptsize\itshape, text=black!70, inner sep=1pt},
+  nm/.style={font=\scriptsize},
+  dot/.style={circle, fill=black, inner sep=1.1pt},
+  % compressor: wide inlet on the left, narrow outlet on the right
+  pics/comp/.style={code={\draw[fill=white, line width=0.6pt]
+     (-0.35,-0.42)--(0.35,-0.22)--(0.35,0.22)--(-0.35,0.42)--cycle;}},
+  % turbine: narrow inlet on the left, wide outlet on the right
+  pics/turb/.style={code={\draw[fill=white, line width=0.6pt]
+     (-0.35,-0.22)--(0.35,-0.42)--(0.35,0.42)--(-0.35,0.22)--cycle;}},
+}

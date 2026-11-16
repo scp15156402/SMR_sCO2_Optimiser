@@ -1,0 +1,127 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{booktabs,tabularx,array}
+\usepackage{graphicx,xcolor}
+\usepackage{caption,subcaption}
+\usepackage{enumitem}
+\usepackage[section]{placeins}
+\usepackage{tikz,pgfplots}
+\usetikzlibrary{arrows.meta,decorations.markings,calc}
+\pgfplotsset{compat=1.17}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\scshape sCO\textsubscript{2} Brayton cycle for a 100\,MWth SMR}
+\fancyhead[R]{\small\scshape ME 306, Autumn 2026}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\thepage}\renewcommand{\headrulewidth}{0pt}}
+\titleformat{\section}{\Large\bfseries}{\thesection}{0.8em}{}[\vspace{0.15em}{\color{black!50}\titlerule[0.5pt]}]
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.7em}{}
+\titlespacing*{\section}{0pt}{1.6em}{1.0em}
+\titlespacing*{\subsection}{0pt}{1.2em}{0.5em}
+\setlength{\parskip}{0.35em}
+\newcommand{\code}[1]{\par\smallskip\noindent{\footnotesize\textbf{Code}\ \textbar\ #1}\par}
+\sisetup{detect-all,per-mode=symbol}
+\setlist{nosep}
+\captionsetup{font=small,labelfont=bf}
+
+\newcommand{\todo}[1]{\textcolor{red}{[TO DO: #1]}}
+\newcommand{\scotwo}{sCO\textsubscript{2}}
+\newcommand{\cotwo}{CO\textsubscript{2}}
+\newcommand{\Ph}{P_\mathrm{high}}
+\newcommand{\Pl}{P_\mathrm{low}}
+\newcommand{\Pm}{P_\mathrm{mid}}
+\newcommand{\Pe}{P_\mathrm{exh}}
+\newcommand{\Tin}{T_\mathrm{in}}
+\newcommand{\Tt}{T_\mathrm{turb}}
+
+\input{sections/diagram_macros}
+
+\begin{document}
+
+%------------------------------- title page ----------------------------------
+\begin{titlepage}
+\thispagestyle{empty}
+\newgeometry{margin=2.2cm,top=2.4cm,bottom=2.2cm}
+\centering
+{\large\scshape ME 306 \textbullet{} Applied Thermodynamics\par}
+\vspace{0.15cm}
+{\small Department of Mechanical Engineering, Indian Institute of Technology Bombay\par}
+\vspace{1.1cm}
+{\color{black!70}\rule{\textwidth}{0.4pt}}\par\vspace{-0.25cm}
+\rule{\textwidth}{1.6pt}\par\vspace{0.55cm}
+{\fontsize{22}{27}\selectfont\bfseries Supercritical \cotwo{} Brayton Cycle\\[4pt] for a \SI{100}{MWth} Small Modular Reactor\par}
+\vspace{0.4cm}
+{\large\itshape Cycle-layout selection under a mass and lifetime-payout trade-off\par}
+\vspace{0.5cm}
+\rule{\textwidth}{1.6pt}\par\vspace{-0.25cm}
+{\color{black!70}\rule{\textwidth}{0.4pt}}\par
+\vspace{1.1cm}
+
+\begin{minipage}[t]{0.47\textwidth}\centering
+{\small\scshape Team\par}\vspace{0.2cm}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l l@{}}
+\toprule
+Name & Roll number\\
+\midrule
+Siddhant Patil & 24B2121\\
+Vaishnavi Shivai & 24B2116\\
+Avinav Shekhar & 24B2186\\
+Anshuman Gupta & 24B2169\\
+Vidit Ganna & 24B2210\\
+\bottomrule
+\end{tabular}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\textwidth}\centering
+{\small\scshape Course instructor\par}\vspace{0.2cm}
+Prof.\ Shankar Krishnan\par
+\vspace{0.9cm}
+{\small\scshape Project mentor\par}\vspace{0.2cm}
+Prof.\ Janani Srree Murallidharan\par
+\end{minipage}
+
+\vspace{1.2cm}
+\begin{minipage}{0.9\textwidth}
+\small
+{\centering\scshape Abstract\par}\vspace{0.2cm}
+\setlength{\parindent}{0pt}\linespread{1.08}\selectfont
+Six supercritical \cotwo{} Brayton cycle layouts are compared for a \SI{100}{MWth} small modular reactor with a turbine inlet limit of \SI{500}{\celsius} and \SI{20}{MPa}: simple, recuperated, recompression, recuperated with intercooling, recompression with intercooling, and partial cooling. Each layout is solved with real-gas properties over a grid of pressures, compressor inlet temperatures and split fractions (1053 designs, 969 feasible). Heat-exchanger conductance is converted to mass, and designs are ranked on mass and on ten-year payout (electricity revenue less hardware cost) by a Pareto front, its knee point and TOPSIS. The simple cycle is reported but left out of the ranking, as it is not a credible candidate. The fixed mass is calibrated so that the best recuperated design (33.3\% efficiency) has the given baseline mass of \SI{60}{t}. The recommended design is the recompression cycle at \SI{20}{MPa}, \SI{7.7}{MPa} and \SI{33}{\celsius} compressor inlet and a split fraction of 0.40. It reaches 40.2\% efficiency at \SI{71.5}{t}, with a ten-year payout (electricity value less hardware cost, a comparative measure only) of \$178.9M against \$148.2M for the recuperated baseline. Its extra output recovers the cost of its extra hardware in about ten months. It gives up 2.1 points of efficiency and 4.7\% of payout against the highest-payout design found (the same cycle at \SI{32}{\celsius} and a split of 0.36), which is \SI{6.7}{t} heavier. Intercooling does not pay in either form.
+\end{minipage}
+
+\vfill
+{\color{black!70}\rule{0.5\textwidth}{0.4pt}}\par\vspace{0.2cm}
+{\small Code and data: \href{https://github.com/scp15156402/SMR_sCO2_Optimiser/tree/rebuild}{\texttt{github.com/scp15156402/SMR\_sCO2\_Optimiser/tree/rebuild}}\par}
+\vspace{0.25cm}
+{\scshape Autumn 2026\par}
+\restoregeometry
+\end{titlepage}
+
+%------------------------------- contents ------------------------------------
+\setcounter{page}{2}
+{\linespread{0.96}\selectfont\tableofcontents}
+\newpage
+
+\input{sections/01_problem}
+\input{sections/02_fluid}
+\input{sections/03_layouts}
+\input{sections/04_models}
+\input{sections/05_objective}
+\input{sections/06_assumptions}
+\input{sections/07_results}
+
+\appendix
+\input{sections/A_numerics}
+\input{sections/B_validation}
+\input{sections/C_decisions}
+\input{sections/D_code}
+\input{sections/E_contributions}
+
+\input{sections/references}
+\end{document}

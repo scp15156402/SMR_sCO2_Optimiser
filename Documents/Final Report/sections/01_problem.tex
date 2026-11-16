@@ -1,0 +1,17 @@
+\section{Problem statement}
+
+A small modular reactor (SMR) is built in a factory and shipped in modules, so its power conversion system must be compact. A closed Brayton cycle using supercritical carbon dioxide (\scotwo) is a candidate because \cotwo{} is dense, and near its critical point (\SI{7.38}{MPa}, \SI{30.98}{\celsius}) it needs little work to compress.
+
+The benefit depends on the cycle layout. A simple recuperated cycle is limited by a mismatch in specific heat between the two sides of the recuperator. More complex layouts reduce that mismatch and raise efficiency, but they add heat exchangers and compressors. That extra hardware adds mass and cost, which works against the reason for choosing \scotwo.
+
+This project takes a \SI{100}{MWth} reactor as the heat source and asks: \emph{which cycle layout and operating point should be recommended, when efficiency has to be weighed against the mass and cost of the hardware that delivers it?}
+
+The work has four parts:
+\begin{enumerate}
+  \item Model six cycle layouts with real-fluid properties.
+  \item Sweep each layout over its operating variables, within the given limits.
+  \item For every feasible design, compute the thermal efficiency and the conductance ($UA$) of each heat exchanger, and from these the hardware mass, hardware cost and lifetime payout.
+  \item Find the designs that are not beaten on both payout and mass (the Pareto front), and select one.
+\end{enumerate}
+
+All given numerical values are illustrative classroom figures and not data for a real reactor.

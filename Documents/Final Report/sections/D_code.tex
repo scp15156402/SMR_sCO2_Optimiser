@@ -1,0 +1,103 @@
+\section{Code and repository}\label{app:code}
+
+All code, input grids, result tables and plots of this study are in the repository
+\begin{center}
+\url{https://github.com/scp15156402/SMR_sCO2_Optimiser/tree/rebuild}
+\end{center}
+(branch \path{rebuild}). The code is Python and uses CoolProp for properties.
+
+\subsection{Folder structure}
+{\small
+\begin{verbatim}
+config.py            given values, constraints, decided values, calibrated M0
+grids.py             sweep ranges for each layout
+cycles/              general cycle solver (knows nothing about CO2 or Brayton)
+  stream.py            a stream: fluid, P, h, flow fraction
+  flowsheet.py         a layout: list of blocks and the streams between them
+  case.py, specs.py    one run: fluid, size, boundary state, block parameters
+  solve.py             runs the passes and returns the result
+  passes/              pressure, flow, ordering, tear
+  blocks/              compressor, turbine, heater, cooler, heat_exchanger,
+                       splitter, mixer
+  physics/             isentropic step, exchanger profile, pinch, UA,
+                       coolant sizing, mixing
+  properties/          CoolProp and ideal-gas property back ends
+  numerics/            bisection and secant root finders
+brayton_cycle/       the six layouts, written as data
+  simple.py, recuperated.py, recompression.py, intercooled.py,
+  recomp_intercooled.py, partial_cooling.py
+helpers/
+  ids.py               design identifier <-> operating variables
+  builders.py          identifier -> solver case, for each layout
+  checks.py            feasibility checks and the two-stage evaluation
+  ranking.py           Pareto front, knee, TOPSIS
+core/                the pipeline, run in this order
+  make_inputs.py       grids.py -> data/inputs.csv
+  solve_points.py      inputs -> data/results_raw.csv, data/infeasible.csv
+  calibrate.py         layout 2 reference -> M0
+  economics.py         mass, cost, payout, ranking -> data/results_econ.csv
+  export_states.py     shortlisted designs -> data/states.csv, shortlist.csv
+  plots.py             figures and T-s diagrams -> out/
+  summary.py           out/summary.md
+data/                input and result tables (CSV)
+out/                 plots, T-s diagrams, summary
+tests/               tests of the solver, identifiers, checks, ranking, layouts
+\end{verbatim}}
+
+\subsection{Solver approach}
+The solver in \path{cycles/} is built in layers, and each layer uses only the ones below it: properties and root finders, then physics functions, then blocks, then passes, then \path{solve.py}.
+
+\paragraph{Streams.} A stream stores the fluid, pressure, specific enthalpy and its fraction of the total mass flow. Temperature, entropy and density are computed from $(P, h)$ when needed. Pressure and enthalpy are used because they identify a state everywhere, including close to the critical point where properties change steeply with temperature.
+
+\paragraph{Blocks.} Each component type is one module in \path{cycles/blocks/}. A block declares its inlet and outlet ports, how it relates the pressures of its ports, how it relates their flows, and an \texttt{evaluate} function that returns the outlet streams from the inlet streams. The seven blocks are compressor, turbine, heater, cooler, two-stream heat exchanger, splitter and mixer. The component equations are those of Section~\ref{sec:model}.
+
+\paragraph{Layouts as data.} A layout is not code. It is a list of blocks with named streams between them. The recompression cycle, for example, is written in \path{brayton_cycle/recompression.py} as
+{\small
+\begin{verbatim}
+Node("MC",    "compressor",     {"in": "s1"},  {"out": "s2"}),
+Node("LTR",   "heat_exchanger", {"cold_in": "s2", "hot_in": "s8"},
+                                {"cold_out": "s3", "hot_out": "s9"}),
+Node("SPLIT", "splitter",       {"in": "s9"},  {"out": ["s9a", "s9b"]}),
+Node("PC",    "cooler",         {"in": "s9a"}, {"out": "s1"}),
+Node("RC",    "compressor",     {"in": "s9b"}, {"out": "s10"}),
+Node("MIX",   "mixer",          {"in": ["s3", "s10"]}, {"out": "s4"}),
+Node("HTR",   "heat_exchanger", {"cold_in": "s4", "hot_in": "s7"},
+                                {"cold_out": "s5", "hot_out": "s8"}),
+Node("HEATER","heater",         {"in": "s5"},  {"out": "s6"}),
+Node("TURB",  "turbine",        {"in": "s6"},  {"out": "s7"}),
+\end{verbatim}}
+\noindent Adding a layout therefore means writing one such list and one entry in \path{helpers/builders.py} that supplies its numbers. We added layout~5 this way without changing the solver.
+
+\paragraph{Passes.} \path{solve.py} runs four passes over a layout (Appendix~\ref{app:numerics}): the pressure pass fixes every stream pressure, the flow pass fixes every flow fraction, the ordering pass sorts the blocks so that each is evaluated after its inlets are known, and the tear pass handles loops. Layouts 3, 5 and 6 contain a loop through the recuperators. One stream in the loop is guessed, the blocks are evaluated in order, and the guess is replaced by the computed value until it stops changing.
+
+\paragraph{Cases.} A case gives a layout its numbers: the fluid, the thermal power, the compressor inlet state, and the parameters of each block. \path{helpers/builders.py} builds the case for a design from its identifier and \path{config.py}, so no number is typed twice.
+
+\paragraph{Two-stage evaluation.} \path{helpers/checks.py} first solves the cycle without the water side, which is fast, and applies the constraints. Only feasible designs are solved again with the cooling-water sizing, which takes about 95\% of the solve time.
+
+\subsection{Where each part of the report is computed}
+\begin{table}[h]\centering\small
+\begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+Report section & Files\\
+\midrule
+\ref{sec:layouts} Cycle layouts & \path{brayton_cycle/*.py}, \path{helpers/builders.py}\\
+\ref{sec:model} Compressor and turbine & \path{cycles/blocks/compressor.py}, \path{turbine.py}, \path{cycles/physics/isentropic.py}\\
+\ref{sec:model} Heater and mass flow & \path{cycles/blocks/heater.py}, \path{cycles/solve.py}\\
+\ref{sec:recup} Recuperator & \path{cycles/blocks/heat_exchanger.py}, \path{cycles/physics/hx_limits.py}, \path{hx_profile.py}, \path{hx_sizing.py}\\
+\ref{sec:cooler} Coolers & \path{cycles/blocks/cooler.py}, \path{cycles/physics/coolant.py}\\
+\ref{sec:model} Pressures, splitting and mixing & \path{cycles/passes/pressure.py}, \path{flow.py}, \path{cycles/blocks/splitter.py}, \path{mixer.py}\\
+\ref{sec:objective} Constraints & \path{config.py} (section B), \path{helpers/checks.py}\\
+\ref{sec:objective} Mass, cost, payout & \path{core/calibrate.py}, \path{core/economics.py}\\
+\ref{sec:objective} Selection & \path{helpers/ranking.py}\\
+\ref{sec:objective} Fixed parameters & \path{config.py}\\
+\ref{sec:results} Grid and feasible set & \path{grids.py}, \path{core/make_inputs.py}, \path{core/solve_points.py}, \path{data/infeasible.csv}\\
+\ref{sec:results} Calibration & \path{core/calibrate.py}\\
+\ref{sec:results} Trends, Pareto front, $T$--$s$ diagrams & \path{core/plots.py}, \path{out/}\\
+\ref{sec:results} Best designs, knee, TOPSIS, sensitivity & \path{core/economics.py}, \path{core/summary.py}, \path{out/summary.md}\\
+\ref{sec:results} Selected design and its states & \path{core/export_states.py}, \path{data/states.csv}, \path{data/shortlist.csv}\\
+\ref{app:numerics} Numerical methods & \path{cycles/solve.py}, \path{cycles/passes/tear.py}, \path{cycles/numerics/roots.py}, \path{helpers/ids.py}\\
+\ref{app:validation} Validation & \path{tests/test_solver.py} and the other files in \path{tests/}\\
+\bottomrule
+\end{tabularx}
+\caption{Report sections and the files that compute them.}\label{tab:files}
+\end{table}

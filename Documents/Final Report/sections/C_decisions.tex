@@ -1,0 +1,27 @@
+\section{Modelling decisions}\label{app:decisions}
+
+Table~\ref{tab:decisions} records each point where the given data left a choice open, what we chose and why.
+
+\begin{table}[!htbp]\centering\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.3cm}>{\raggedright\arraybackslash}p{4.2cm}X}
+\toprule
+Question & Decision & Reason\\
+\midrule
+What sets the pressure ratio? & $\Ph$ is fixed at the compressor outlet and $\Pl$ at its inlet. The ratio is a result. & The compressor is the only component that raises pressure, so its outlet is the highest pressure in the cycle. The \SI{20}{MPa} limit must apply there.\\
+Recuperator: fix effectiveness or pinch? & Effectiveness 0.90. Reject designs with pinch below \SI{5}{K}. & 0.90 is given as the baseline and \SI{5}{K} as a minimum. Both are honoured without tuning each design.\\
+How is the cooler sized? & Minimum \cotwo--water difference of \SI{5}{K}. & Only the water temperature is given. A pinch rule fixes the water flow, and the flow fixes $UA$, with nothing left to guess.\\
+Cooler mass & \SI{2.5}{kg} per \si{kW/K}, as for recuperators. & No figure is given for coolers. The same exchanger technology is assumed.\\
+Baseline mass split & $M_0$ calibrated at the most efficient feasible recuperated design. & \SI{60}{t} is given for the baseline layout. Calibrating once lets every other design be measured against it on the same basis.\\
+Is the given 10~t recuperator figure used? & No. & It appears only inside a worked example. Exchanger masses are computed from $UA$ here.\\
+Cost model & Cost $= \SI{250}{US\$/kg} \times$ mass. & A single price is given for installed hardware.\\
+Economic measure & Net return over $N = 10$ years. & It puts a one-time cost and a yearly income on one scale, and needs no reference design.\\
+Objectives & Lifetime payout and mass. & Payout combines efficiency and cost. Mass represents compactness. The critical-point margin is treated as a constraint and reported.\\
+Carnot efficiency & Computed per design from $\Tin$ and $\Tt$. & Both temperatures are swept, so a single constant would misstate the second-law efficiency.\\
+Turbine inlet temperature & Swept at and below \SI{500}{\celsius}. & It is given as an upper limit.\\
+Is the simple cycle ranked? & No. It is solved and reported, but left out of the Pareto front, knee and TOPSIS. & At 15\% efficiency it is not a candidate, but as the lightest layout it would set the light end of the front and move the knee towards light designs.\\
+What is layout 5? & Layout 3 with two intercooled main-compression stages. & The layout is given only as recompression with intercooling. The recompressor takes warm fluid, so intercooling is applied to the main compressor only.\\
+\SI{7.7}{MPa} limit in layout 6 & Applied to the main compressor inlet only; the pre-compressor inlet ($\Pe$) is below it. & The layout requires $\Pe$ below the main compressor inlet pressure. The inlet stays single-phase, since its temperature is above the critical temperature.\\
+\bottomrule
+\end{tabularx}
+\caption{Modelling decisions.}\label{tab:decisions}
+\end{table}

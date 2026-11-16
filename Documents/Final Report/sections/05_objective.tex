@@ -1,0 +1,137 @@
+\section{Objective and method}\label{sec:objective}
+
+\subsection{What is computed}
+The cycle model gives two engineering quantities for each design: the \textbf{thermal efficiency} $\eta$ and the \textbf{conductance} $UA$ of every heat exchanger. Efficiency sets the electricity produced. Conductance sets the size of the exchangers, and from it the mass and cost of the hardware.
+
+\code{\path{core/solve_points.py}, \path{core/economics.py}}
+
+\subsection{Constraints}
+A design is feasible only if it meets all the given limits (Table~\ref{tab:constraints}).
+
+\begin{table}[!htbp]\centering\small
+\begin{tabular}{ll}
+\toprule
+Quantity & Limit\\
+\midrule
+Compressor inlet temperature & $\geq \SI{32}{\celsius}$\\
+Compressor inlet pressure & $\geq \SI{7.7}{MPa}$\\
+Maximum cycle pressure & $\leq \SI{20}{MPa}$\\
+Turbine inlet temperature & $\leq \SI{500}{\celsius}$\\
+Recuperator minimum pinch & $\geq \SI{5}{K}$\\
+Split fraction & between 0 and 0.5\\
+\bottomrule
+\end{tabular}
+\caption{Given constraints.}\label{tab:constraints}
+\end{table}
+
+The compressor inlet limits keep the compressor away from the two-phase region.
+
+In layout~6 the pre-compressor inlet is at $\Pe$, which lies below the main compressor inlet pressure by construction (\SI{4.5}{MPa} to \SI{7.5}{MPa} in the grid). We therefore apply the \SI{7.7}{MPa} limit to the main compressor inlet only, which in layout~6 is at $\Pm$ (\SI{7.7}{MPa} to \SI{8.7}{MPa}) and meets it. Only the pre-compressor, which raises the flow from $\Pe$ to $\Pm$ before the main compressor, operates below the limit. This does not bring the pre-compressor into the two-phase region: two phases coexist only below the critical temperature (\SI{30.98}{\celsius}), and every compressor inlet is at \SI{32}{\celsius} or above, so the inlet is a single-phase gas at every grid point. What is lost is the high density that the limit secures. At \SI{32}{\celsius} the inlet density is \SI{104}{kg/m^3} at \SI{4.5}{MPa} against \SI{602}{kg/m^3} at \SI{7.7}{MPa}, so the pre-compressor needs more work per unit mass. We therefore report the layout~6 results with this exception to the given limits.
+
+\code{\path{config.py} (section B), \path{helpers/checks.py}}
+
+\subsection{Mass}
+The given data include one conversion from conductance to mass for a printed-circuit heat exchanger, \SI{2.5}{kg} per \si{kW/K}, an allowance of \SI{1.5}{t} for an added compressor, and a baseline system mass of about \SI{60}{t} for the simple recuperated cycle. The mass of a design is
+\begin{equation}
+m = k_{UA}\Big(\sum UA_\mathrm{recuperators} + \sum UA_\mathrm{coolers}\Big) + M_0 + m_c\,n_\mathrm{extra},
+\end{equation}
+with $k_{UA} = \SI{2.5}{kg}$ per \si{kW/K}, $m_c = \SI{1.5}{t}$, and $n_\mathrm{extra}$ the number of compressors beyond the first (Table~\ref{tab:layouts}).
+
+$M_0$ is the fixed mass of the power-conversion system: everything that is not a heat exchanger or an added compressor, namely the turbine, generator, first compressor, piping and structure. The given data do not state this mass directly. They give only a total of about \SI{60}{t} for the baseline recuperated cycle, which includes its recuperator and cooler. We therefore find $M_0$ by calibration, in three steps.
+\begin{enumerate}
+  \item We sweep the recuperated layout (layout~2) and take its feasible design with the highest efficiency as the reference.
+  \item We compute the mass of the reference's two exchangers from their conductance.
+  \item We set $M_0$ so that the reference has the given baseline mass:
+  \begin{equation}
+  M_0 = \SI{60}{t} - k_{UA}\big(UA_\mathrm{recup} + UA_\mathrm{cooler}\big)_\mathrm{reference}.
+  \end{equation}
+\end{enumerate}
+The reference is the layout~2 design at $\Ph = \SI{20}{MPa}$, $\Pl = \SI{7.7}{MPa}$, $\Tin = \SI{34}{\celsius}$ and $\Tt = \SI{500}{\celsius}$. Its efficiency is 33.3\%, and the calibration gives $M_0 = \SI{39.06}{t}$ (Section~\ref{sec:results}). We hold this value fixed for every layout and operating point, so that differences in mass between designs come only from heat-exchanger conductance and added compressors (the limits of this choice are in Section~\ref{sec:limits}). For the same reason, the baseline efficiency we compare against is the computed 33.3\% of the reference, not the placeholder of 30\% in the given worked example.
+
+Volume is taken as mass divided by the baseline density, $\SI{60}{t}/\SI{120}{m^3} = \SI{0.5}{t/m^3}$.
+
+\code{\path{core/calibrate.py}, \path{core/economics.py}}
+
+\subsection{Cost, lifetime payout and incremental payback}
+One price is given for installed hardware, \SI{250}{US\$/kg}, and an electricity value of \SI{70}{US\$/MWh} over \SI{7000}{h} per year. Hardware cost is therefore taken as proportional to mass. Two economic measures are used, and neither is a financial result.
+
+\paragraph{Lifetime payout (for ranking).} To put a one-time hardware cost and a yearly income on one scale, every design is given the score
+\begin{equation}
+\Pi_N = \underbrace{N \,\eta\, \dot Q_\mathrm{th}\, t_\mathrm{op}\, c_e}_{\text{electricity value over } N \text{ years}} \;-\; \underbrace{c_m\, m}_{\text{power-conversion hardware cost}},
+\end{equation}
+with $t_\mathrm{op} = \SI{7000}{h/yr}$, $c_e = \SI{70}{US\$/MWh}$, $c_m = \SI{250}{US\$/kg}$ and $N = 10$ years. $\Pi_N$ is called the payout in this report, but it is \emph{not} a payout or profit in the financial sense. It leaves out the reactor and heater, fuel, operation and maintenance, financing and construction, and it does not discount future income. Its absolute value therefore means nothing. Only the \emph{difference} in $\Pi_N$ between two designs is used, and that difference is meaningful only to the extent that the omitted costs are the same for both (Section~\ref{sec:limits}). We use $\Pi_N$ because it combines the two quantities the given data do price, efficiency and hardware mass, into one number that rises with efficiency and falls with mass.
+
+\paragraph{Incremental payback (for comparison with the baseline).} The given worked comparison measures a candidate against the baseline: the extra electricity it produces is valued per year, the extra hardware is costed, and the two are compared. The same calculation is used here. For a candidate with efficiency $\eta$ and mass $m$ against the reference with $\eta_\mathrm{ref}$ and $m_\mathrm{ref}$,
+\begin{equation}
+\Delta \dot V = (\eta - \eta_\mathrm{ref})\,\dot Q_\mathrm{th}\, t_\mathrm{op}\, c_e, \qquad
+\Delta C = c_m\,(m - m_\mathrm{ref}), \qquad
+t_\mathrm{pb} = \frac{\Delta C}{\Delta \dot V}.
+\end{equation}
+$t_\mathrm{pb}$ is the time over which the added electricity value equals the added hardware cost. It is a simple, undiscounted comparison of the added hardware with the added output, under the same omissions as $\Pi_N$. It is not the time for the plant to pay for itself, which would need the full plant cost. Whenever this report says that a design ``recovers'' its extra hardware cost in some time, this incremental payback is meant.
+
+\code{\path{core/economics.py}}
+
+\subsection{Selection}
+Two objectives are used:
+\begin{itemize}
+  \item maximise the lifetime payout $\Pi_N$;
+  \item minimise the mass $m$, as the measure of compactness.
+\end{itemize}
+
+\paragraph{Why two objectives and not one.} Payout already combines efficiency and hardware cost in one number, so efficiency is not a separate objective. Mass is kept as a second objective because a small modular reactor is valued for being compact and transportable, and the price of \SI{250}{US\$/kg} does not capture that. The two conflict whenever extra heat-exchanger area buys extra efficiency: the payout rises and so does the mass. There is then no single best design, only a set of reasonable trade-offs, and the selection has to be made in steps.
+
+\paragraph{Step 1: Pareto front (remove designs that are worse on both).} A design is \emph{dominated} if some other feasible design has a higher payout and a lower mass. Nobody would choose a dominated design, whatever their preference between payout and mass. Removing all dominated designs leaves the Pareto front. Every design on the front is a valid answer to the question ``what is the best payout available at this mass?''. This step uses no weights and no judgement.
+
+\paragraph{Step 2: knee point (the balanced design on the front).} Moving along the front from light to heavy, payout first rises quickly and then flattens. The knee is where the front bends: before it, a little mass buys a lot of payout, and after it, a lot of mass buys little. It is located as follows. Both objectives are scaled to the range 0 to 1 over the front, so that tonnes and dollars can be compared. The ideal corner is the point with the highest payout and the lowest mass on the front, which no real design reaches. The knee is the design on the front with the smallest distance to that corner,
+\begin{equation}
+d = \sqrt{(1 - \hat\Pi)^2 + \hat m^2},
+\end{equation}
+where $\hat\Pi$ and $\hat m$ are the scaled payout and mass. The weakness of this rule is that the scaling depends on the two ends of the front. A very light design with a very low payout stretches the scale and moves the knee, even though it is not a serious candidate. We saw this in our first ranking, which included the simple, non-recuperated layout. Its three lightest designs (about \SI{48.6}{t}, payout \$45M to \$60M) formed the light end of the front, and the knee moved to the recuperated reference at \SI{60}{t}. That result reflected the stretched scale rather than any merit of the reference, and it did not help in choosing a design.
+
+\paragraph{Which designs enter the ranking.} For this reason we leave the simple cycle (layout~1) out of the Pareto front, the knee and TOPSIS, while still solving it and reporting its results. It is not a credible candidate in any case: its best efficiency is 15\%, less than half that of the recuperated baseline, and half of its grid could not be solved (Section~\ref{sec:results}). Its role in this study is to show what recuperation is worth, and the comparison of the best design of each layout (Table~\ref{tab:best}) shows that without it.
+
+\paragraph{Step 3: TOPSIS (a ranked list of all designs).} The knee gives one design and says nothing about the next best. TOPSIS ranks every feasible design, on or off the front, and is used as an independent check. Each objective is divided by its root-sum-square over all designs, $r_{ki} = x_{ki}/\sqrt{\sum_k x_{ki}^2}$, and multiplied by a weight, $v_{ki} = w_i r_{ki}$. The ideal design takes the best value of each objective and the worst design the worst value of each. For design $k$, $d_k^{+}$ is its distance to the ideal and $d_k^{-}$ its distance to the worst, and the score is
+\begin{equation}
+C_k = \frac{d_k^{-}}{d_k^{+} + d_k^{-}}, \qquad 0 \le C_k \le 1 .
+\end{equation}
+A design scores well if it is close to the ideal and far from the worst. Equal weights, $w = 0.5$ for each objective, are used, because nothing given says that one objective matters more. TOPSIS differs from the knee in two ways: it scales by the whole feasible set and not by the ends of the front, and it rewards distance from the worst design. It is therefore less sensitive to a few extreme designs.
+
+\paragraph{Using the two together.} The knee and TOPSIS are computed independently, so their agreement is a check on the selection. In this study they select the same design (Section~\ref{sec:results}). The selected design is then compared with the best design on each single measure (payout, efficiency and mass) to state what the compromise costs.
+
+The following are also reported for the selected design and for the best design of each layout: specific power (\si{MWe/t} and \si{MWe/m^3}), heat input per \si{MWe}, second-law efficiency, cooling-water flow, and the margin of the compressor inlet above the critical point.
+
+\code{\path{helpers/ranking.py}, \path{core/economics.py}}
+
+\subsection{Fixed parameters}
+
+\begin{table}[!htbp]\centering\small
+\begin{tabular}{llr}
+\toprule
+Group & Parameter & Value\\
+\midrule
+Given & Reactor thermal power & \SI{100}{MW}\\
+ & Compressor isentropic efficiency & 0.89\\
+ & Turbine isentropic efficiency & 0.90\\
+ & Cooling-water supply temperature & \SI{25}{\celsius}\\
+ & Annual operation & \SI{7000}{h}\\
+ & Electricity value & \SI{70}{US\$/MWh}\\
+ & Installed hardware cost & \SI{250}{US\$/kg}\\
+ & Heat-exchanger mass per unit $UA$ & \SI{2.5}{kg} per \si{kW/K}\\
+ & Mass of an added compressor & \SI{1.5}{t}\\
+ & Baseline system mass and volume & \SI{60}{t}, \SI{120}{m^3}\\
+ & Pressure drops & neglected\\
+\midrule
+Decided & Recuperator effectiveness & 0.90 (held fixed)\\
+& Cooler minimum temperature difference & \SI{5}{K}\\
+ & Cooler mass per unit $UA$ & same as recuperator\\
+ & Cooler outlet temperature & compressor inlet temperature\\
+ & Lifetime for payout, $N$ & 10 years\\
+ & TOPSIS weights (payout, mass) & 0.5, 0.5\\
+\midrule
+Calibrated & $M_0$ & \SI{39.06}{t}\\
+\bottomrule
+\end{tabular}
+\caption{Parameters held fixed in every calculation.}\label{tab:config}
+\end{table}
+
+\code{\path{config.py}}

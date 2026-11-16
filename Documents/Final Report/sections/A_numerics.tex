@@ -1,0 +1,90 @@
+\section{Numerical methods}\label{app:numerics}
+
+\subsection{Solver structure}
+The cycle solver is written in Python. A layout is a list of components and the streams that connect them, with no numbers in it. A case adds the numbers: pressure levels, temperatures, efficiencies and exchanger specifications. Solving a case takes four steps:
+\begin{enumerate}
+  \item \textbf{Pressures.} Every stream pressure is found by direct propagation from the fixed pressure levels through the components. No iteration is needed.
+  \item \textbf{Flow fractions.} The fraction of the total flow in every stream is found from the splitter settings.
+  \item \textbf{Order of evaluation.} The components are ordered so that each is evaluated after its inlets are known. Where the layout has a loop (layouts~3, 5 and~6), one stream is chosen as a guess.
+  \item \textbf{Evaluation.} Components are evaluated in order. With a guessed stream, the pass is repeated by successive substitution until the guessed enthalpy changes by less than $10^{-8}$ (relative).
+\end{enumerate}
+Layouts~1, 2 and~4 need no iteration. A design that fails to converge, or that violates a physical check (a temperature cross in an exchanger, a failed energy balance), is flagged and recorded as infeasible. It does not stop the sweep.
+
+\code{\path{cycles/solve.py}, \path{cycles/passes/}}
+
+\subsection{Properties}
+All fluid properties come from CoolProp~\cite{coolprop}, for both fluids in the model: \cotwo{} on the cycle side (Span--Wagner equation of state~\cite{spanwagner}) and water on the cooler side (IAPWS-95 formulation~\cite{iapws}). Pressure and enthalpy are the independent pair for every stream. Pressure and temperature are used where a temperature is specified (turbine inlet, cooler outlet, water inlet), and pressure and entropy for the isentropic outlet state of a compressor or turbine. No ideal-gas or constant-$c_p$ relation is used anywhere in the cycle model.
+
+\code{\path{cycles/properties/coolprop.py}}
+
+\subsection{Recuperator: effectiveness, pinch and conductance}
+The recuperator calculation is the core of the model, because near the critical point the specific heats of the two streams differ strongly and change along the exchanger. Textbook methods that assume constant $c_p$ (a single log-mean temperature difference, or effectiveness--NTU charts) do not apply. The calculation is done in five steps, all in terms of enthalpy.
+
+\paragraph{1. Maximum possible duty.} For a counterflow exchanger two limits apply: the hot stream cannot leave colder than the cold stream enters, and the cold stream cannot leave hotter than the hot stream enters. In enthalpy, with $\dot m_h$ and $\dot m_c$ the flows on the two sides,
+\begin{equation}
+\dot Q_\mathrm{max} = \min\Big[\;\dot m_h\big(h_{h,\mathrm{in}} - h(P_h, T_{c,\mathrm{in}})\big),\;\; \dot m_c\big(h(P_c, T_{h,\mathrm{in}}) - h_{c,\mathrm{in}}\big)\;\Big].
+\end{equation}
+Each term needs one CoolProp call at the other stream's inlet temperature. Which limit is smaller is a result of the calculation and is not assumed. In the recompression cycle the two sides of the low-temperature recuperator also carry different flows, $\dot m_c = (1-x)\dot m_h$, and this enters both terms.
+
+\paragraph{2. Duty and outlet states.} With the effectiveness fixed at $\varepsilon = 0.90$,
+\begin{equation}
+\dot Q = \varepsilon\, \dot Q_\mathrm{max}, \qquad h_{h,\mathrm{out}} = h_{h,\mathrm{in}} - \frac{\dot Q}{\dot m_h}, \qquad h_{c,\mathrm{out}} = h_{c,\mathrm{in}} + \frac{\dot Q}{\dot m_c}.
+\end{equation}
+The outlets follow directly from the energy balance, so the recuperator itself needs no iteration. Effectiveness defined this way, on enthalpy, stays meaningful when $c_p$ varies; one defined on temperature would not.
+
+\paragraph{3. Temperature profile.} A fixed effectiveness does not guarantee that the two streams stay apart inside the exchanger. Because $c_p$ varies, the temperature curves are not straight, and they can come closest, or even cross, somewhere in the middle rather than at an end. To find out, the duty is divided into $N = 100$ equal slices, and the enthalpies at the $N+1$ boundaries, counted from the cold end, are
+\begin{equation}
+h_{c,j} = h_{c,\mathrm{in}} + \frac{j}{N}\,\frac{\dot Q}{\dot m_c}, \qquad h_{h,j} = h_{h,\mathrm{out}} + \frac{j}{N}\,\frac{\dot Q}{\dot m_h}, \qquad j = 0, 1, \dots, N.
+\end{equation}
+These are exact from the energy balance. Temperatures follow from $T_{c,j} = T(P_c, h_{c,j})$ and $T_{h,j} = T(P_h, h_{h,j})$ through CoolProp, and the local difference is $\Delta T_j = T_{h,j} - T_{c,j}$. Dividing in duty rather than in length means no geometry is needed.
+
+\paragraph{4. Pinch and feasibility.} The pinch is the smallest local difference,
+\begin{equation}
+\Delta T_\mathrm{pinch} = \min_j \Delta T_j .
+\end{equation}
+If $\Delta T_\mathrm{pinch} \le 0$ the curves cross, the specified duty is physically impossible, and the design is recorded as not solved. If $0 < \Delta T_\mathrm{pinch} < \SI{5}{K}$ the design is solved but rejected as infeasible. This is the check that removes most infeasible designs (Table~\ref{tab:grid}): towards the cold end of a recuperator the high-pressure stream's $c_p$ rises steeply as it approaches the pseudo-critical temperature, and the pinch moves inside the exchanger.
+
+\paragraph{5. Conductance.} A single log-mean temperature difference is exact only when $\Delta T$ varies linearly with duty, which needs constant $c_p$. Each slice is short enough to be treated that way, so the conductance is the sum over slices:
+\begin{equation}
+UA = \sum_{j=1}^{N} \frac{\dot Q/N}{\Delta T_{\mathrm{lm},j}}, \qquad \Delta T_{\mathrm{lm},j} = \frac{\Delta T_j - \Delta T_{j-1}}{\ln(\Delta T_j/\Delta T_{j-1})}.
+\end{equation}
+If the two end differences of a slice are equal to within $10^{-9}$ relative, their arithmetic mean replaces the log-mean. $UA$ then gives the recuperator mass through $k_{UA}$ (Section~\ref{sec:objective}).
+
+\paragraph{Scaling with mass flow.} Inside the solver every flow is a fraction of the total cycle flow, so $\dot Q$ and $UA$ are first obtained per kilogram per second of total flow. The total flow is known only after the cycle is solved, from the fixed heater duty, $\dot m = \dot Q_\mathrm{th}/(h_\mathrm{turb,in} - h_\mathrm{heater,in})$, and $UA$ is then multiplied by $\dot m$ to give \si{kW/K}.
+
+\paragraph{Accuracy.} Enthalpies at the nodes are exact, so the only discretisation error lies in locating the pinch between nodes and in the log-mean within each slice. Appendix~\ref{app:validation} shows that $N = 100$ and $N = 1000$ agree to better than 0.01\%.
+
+\code{\path{cycles/blocks/heat_exchanger.py}, \path{cycles/physics/hx_limits.py}, \path{cycles/physics/hx_profile.py}, \path{cycles/physics/hx_sizing.py}}
+
+\subsection{Cooler: water flow from the pinch, then conductance}
+A cooler is a counterflow heat exchanger with \cotwo{} on the hot side and cooling water on the cold side, so it uses the same profile and conductance routines as the recuperator. Water properties come from CoolProp (IAPWS-95). The water enters at \SI{25}{\celsius} and is held at \SI{6}{bar}. What differs from the recuperator is which quantities are known and which are found.
+
+\paragraph{Duty: fixed by the cycle.} The cooler must bring the \cotwo{} to the compressor inlet temperature, so its outlet state $h(P, \Tin)$ is fixed and so is its duty,
+\begin{equation}
+\dot Q_\mathrm{cooler} = \dot m_\mathrm{CO_2}\big(h_\mathrm{CO_2,in} - h(P, \Tin)\big).
+\end{equation}
+
+\paragraph{Water flow: found from the pinch.} The water flow $\dot m_w$ is not given, and it decides everything else. For a trial flow the water outlet enthalpy follows from the energy balance, $h_{w,\mathrm{out}} = h_{w,\mathrm{in}} + \dot Q_\mathrm{cooler}/\dot m_w$. The same equal-duty profile is then built, with water as the cold stream, and its pinch found as in step~4 of the recuperator. Less water heats up more and approaches the \cotwo{} temperature, so the pinch shrinks; more water stays cool and the pinch grows. The pinch therefore rises steadily with $\dot m_w$, and the flow that gives the decided pinch of \SI{5}{K} is the root of
+\begin{equation}
+f(\dot m_w) = \Delta T_\mathrm{pinch}(\dot m_w) - \SI{5}{K} = 0 .
+\end{equation}
+It is found by bisection:
+\begin{itemize}
+  \item \textbf{Lower bound:} the flow at which the water would leave \SI{0.01}{K} below the \cotwo{} inlet temperature (least water; pinch near zero).
+  \item \textbf{Upper bound:} the flow at which the water warms by only \SI{0.5}{K} (most water).
+  \item \textbf{Stopping rule:} bracket width below $10^{-6}$ relative.
+\end{itemize}
+With the \cotwo{} leaving at \SI{32}{\celsius} or more against \SI{25}{\celsius} water, the temperature difference at the cold end is at least \SI{7}{K}, so a \SI{5}{K} pinch can always be reached. As a guard, a design whose computed cooler pinch differs from \SI{5}{K} by more than \SI{0.01}{K} is rejected.
+
+\paragraph{Conductance: from the final profile.} With the water flow known, the profile is built once more and the cooler $UA$ is summed slice by slice exactly as for the recuperator. The cooler mass then follows from the same $k_{UA}$. The water flow itself is reported, because cooling-water demand matters for siting a reactor.
+
+\paragraph{Cost and resolution.} Every trial of the bisection builds a full profile, which makes the cooler the most expensive step of a solve (about 95\% of the time). The sweeps use 50 slices; the shortlisted designs are re-solved with 100, and the cooler $UA$ at 50 slices is within 0.05\% of the 100-slice value.
+
+\paragraph{The simple-cycle failure.} The \SI{6}{bar} water pressure explains why half of the simple-cycle designs did not solve (Section~\ref{sec:results}). Without a recuperator the cooler receives turbine exhaust at about \SI{400}{\celsius}. The lower bound of the bisection then asks for water leaving close to that temperature, above the boiling point of water at \SI{6}{bar} (\SI{159}{\celsius}), where CoolProp cannot return a liquid state. The same machinery works for every other layout, where the cooler inlet is far cooler.
+
+\code{\path{cycles/blocks/cooler.py}, \path{cycles/physics/coolant.py}, \path{cycles/numerics/roots.py}}
+
+\subsection{Sweep and bookkeeping}
+Each design point has an identifier that encodes its layout and operating variables as integers, for example \texttt{L3\_Ph200\_Pl077\_T320\_Tt500\_x030} for layout~3 at $\Ph = \SI{20.0}{MPa}$, $\Pl = \SI{7.7}{MPa}$, $\Tin = \SI{32.0}{\celsius}$, $\Tt = \SI{500}{\celsius}$ and $x = 0.30$. The calculation runs as a chain of files: the grid of inputs, the solver output (efficiency, conductances and pinches of feasible points, with a separate list of infeasible points and the reason for each), and the economic results (mass, cost, payout and rankings). Economic assumptions can therefore be changed without solving any cycle again. The grid for each layout is given in Table~\ref{tab:grid}.
+
+\code{\path{helpers/ids.py}, \path{core/make_inputs.py}, \path{core/solve_points.py}}
