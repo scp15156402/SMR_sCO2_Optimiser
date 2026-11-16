@@ -44,25 +44,82 @@ def _save(fig, name):
     return path
 
 
-def pareto_plot(rows):
-    fig, ax = plt.subplots(figsize=(8, 5.5))
-    for L in sorted({int(r["layout"]) for r in rows}):
-        sel = [r for r in rows if int(r["layout"]) == L]
-        ax.scatter([_f(r, "mass_t") for r in sel], [_f(r, "payout_usd") / 1e6 for r in sel],
-                   s=12, alpha=0.6, color=COLORS[L], label=NAMES[L])
-    front = sorted((r for r in rows if r["pareto"] == "1"), key=lambda r: _f(r, "mass_t"))
-    ax.plot([_f(r, "mass_t") for r in front], [_f(r, "payout_usd") / 1e6 for r in front],
-            "k-", lw=1.2, label="Pareto front")
-    for r in rows:
-        if r["knee"] == "1":
-            ax.plot(_f(r, "mass_t"), _f(r, "payout_usd") / 1e6, "k*", ms=16,
-                    mfc="gold", label=f"knee {r['ID']}")
-    ax.set_xlabel("PCS mass [t]")
-    ax.set_ylabel("lifetime payout [million USD]")
-    ax.set_title("Lifetime payout vs mass, all feasible designs")
-    ax.grid(alpha=0.3)
-    ax.legend(fontsize=8)
-    return _save(fig, "pareto_payout_vs_mass.png")
+PARETO_STYLE = {   # layout: (legend label, colour, marker)
+    2: ("2 Recuperated", "#2a78d6", "o"),
+    3: ("3 Recompression", "#eb6834", "o"),
+    4: ("4 Recup. + intercooling", "#1baf7a", "s"),
+    5: ("5 Recomp. + intercooling", "#eda100", "s"),
+    6: ("6 Partial cooling", "#e87ba4", "^"),
+}
+
+
+def _design_label(id_):
+    p = physical(parse_id(id_))
+    s = (f"TOPSIS first: layout {parse_id(id_)['layout']},\n"
+         f"T_in {p['T_in_C']:g} °C, x = {p['split']:.2f}")
+    if p["P_exh_MPa"] is not None:
+        s += f",\nP_exh {p['P_exh_MPa']:g} MPa"
+    return s
+
+
+def pareto_plot(rows, name="pareto_payout_vs_mass.png"):
+    """Payout vs mass for the ranked layouts, Pareto front, knee / TOPSIS #1 and the
+    recuperated reference. `rows`: results_econ.csv or results_econ_strict.csv."""
+    import config
+    xy = lambda r: (_f(r, "mass_t"), _f(r, "payout_usd") / 1e6)
+    ranked = [r for r in rows if r["topsis_rank"] != ""]
+    fig, ax = plt.subplots(figsize=(7, 5), dpi=DPI)
+    ax.set_axisbelow(True)
+    ax.grid(color="#e6e6e6", lw=0.6)
+    for L in sorted({int(r["layout"]) for r in ranked}):
+        if L in config.RANK_EXCLUDE_LAYOUTS:
+            continue
+        label, color, marker = PARETO_STYLE[L]
+        pts = [xy(r) for r in ranked if int(r["layout"]) == L]
+        ax.scatter(*zip(*pts), s=12, alpha=0.6, color=color, marker=marker,
+                   edgecolors="none", label=label)
+
+    front = sorted((xy(r) for r in ranked if r["pareto"] == "1"))
+    ax.plot(*zip(*front), color="#222", lw=1.4, label="Pareto front", zorder=3)
+    ax.scatter(*zip(*front), s=16, facecolors="white", edgecolors="black", linewidths=1, zorder=4)
+
+    knee = next(r for r in ranked if r["knee"] == "1")
+    top = next(r for r in ranked if r["topsis_rank"] == "1")
+    star = dict(marker="*", s=150, color="black", edgecolors="white", linewidths=1, zorder=5)
+    if knee["ID"] == top["ID"]:
+        ax.scatter(*xy(top), label="Selected (knee = TOPSIS first)", **star)
+    else:   # knee first, so the star stays visible when the two nearly coincide
+        ax.scatter(*xy(knee), marker="D", s=60, color="black", edgecolors="white",
+                   linewidths=1, zorder=5, label="Knee")
+        ax.scatter(*xy(top), label="TOPSIS first", **{**star, "zorder": 6})
+
+    # Annotations sit in the empty region above and left of the front (no design
+    # can lie above the front); extra headroom at the top keeps them off the data.
+    (x0, x1), (y0, y1) = ax.get_xlim(), ax.get_ylim()
+    y1 += 0.10 * (y1 - y0)
+    ax.set_ylim(y0, y1)
+    dx, dy = x1 - x0, y1 - y0
+    arrow = dict(arrowstyle="-", color="#555", lw=0.8)
+    ax.annotate(_design_label(top["ID"]), xy(top), xytext=(x0 + 0.03 * dx, y1 - 0.02 * dy),
+                ha="left", va="top", fontsize=8, arrowprops=arrow)
+    ref = next((r for r in rows if r["ID"] == config.M0_REF_ID), None)
+    if ref is not None:
+        rx, ry = xy(ref)
+        ax.annotate("Recuperated\nreference", (rx, ry), xytext=(rx + 0.015 * dx, ry + 0.13 * dy),
+                    ha="left", va="bottom", fontsize=8, arrowprops=arrow)
+
+    ax.set_xlabel("Mass (t)")
+    ax.set_ylabel("10-year payout (M$)")
+    for s in ("top", "right"):
+        ax.spines[s].set_visible(False)
+    for s in ("left", "bottom"):
+        ax.spines[s].set_color("#999")
+    ax.tick_params(labelsize=8, labelcolor="#444")
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.13), ncol=4, frameon=False,
+              fontsize=7.5, markerscale=1.5)
+    fig.tight_layout()
+    print(f"{name}: knee {knee['ID']}, TOPSIS #1 {top['ID']}")
+    return _save(fig, name)
 
 
 def eta_mass_plot(rows):
@@ -189,7 +246,9 @@ def ts_plot(id_, tag, states):
 
 def main():
     rows = _read(DATA / "results_econ.csv")
-    made = [pareto_plot(rows), eta_mass_plot(rows), eta_pr_plot(rows), eta_split_plot(rows)]
+    made = [pareto_plot(rows),
+            pareto_plot(_read(DATA / "results_econ_strict.csv"), "pareto_payout_vs_mass_strict.png"),
+            eta_mass_plot(rows), eta_pr_plot(rows), eta_split_plot(rows)]
     states = defaultdict(list)
     tags = {}
     for s in _read(DATA / "states.csv"):
