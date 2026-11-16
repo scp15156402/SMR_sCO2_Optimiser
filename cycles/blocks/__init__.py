@@ -7,7 +7,7 @@ they need through the contract in base.py.
 from __future__ import annotations
 
 from . import (compressor, cooler, heat_exchanger, heater, mixer, splitter,
-               throttle, turbine)
+               turbine)
 
 _MODULES = (
     compressor,
@@ -17,7 +17,6 @@ _MODULES = (
     heater,
     splitter,
     mixer,
-    throttle,
 )
 
 REGISTRY = {m.TYPE: m for m in _MODULES}

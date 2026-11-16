@@ -9,7 +9,7 @@ Joule-Thomson cryocooler are all layouts, not code.
     from cycles.units import MPa, degC, MW
 
     result = solve(my_case)
-    print(result.summary())
+    print(result.metrics["eta_th"])
 """
 from __future__ import annotations
 
@@ -19,9 +19,8 @@ from .result import Result
 from .solve import solve
 from .physics.exergy import Environment
 from .physics.hydraulics import FixedDrop, NoPumping, QuadraticDrop
-from .specs import (CoolantFlow, CoolantOutlet, CoolantPinch, CoolantRise,
-                    Effectiveness, MassFlow, NetPower, Pinch, ThermalPower,
-                    UAperFlow)
+from .specs import (CoolantPinch, Effectiveness, MassFlow, Pinch,
+                    ThermalPower, UAperFlow)
 from .stream import Stream
 
 __version__ = "0.1.0"
@@ -29,8 +28,8 @@ __version__ = "0.1.0"
 __all__ = [
     "Case", "Numerics", "Flowsheet", "Node", "Result", "Stream", "solve",
     "Effectiveness", "Pinch", "UAperFlow",
-    "CoolantFlow", "CoolantOutlet", "CoolantRise", "CoolantPinch",
+    "CoolantPinch",
     "NoPumping", "FixedDrop", "QuadraticDrop",
     "Environment",
-    "ThermalPower", "NetPower", "MassFlow",
+    "ThermalPower", "MassFlow",
 ]

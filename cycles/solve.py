@@ -20,10 +20,10 @@ from .passes import pressure as pressure_pass
 from .physics import exergy as exergy_mod
 from .properties import make_props
 from .result import Result
-from .specs import MassFlow, NetPower, ThermalPower
+from .specs import MassFlow, ThermalPower
 from .stream import Stream
 
-ADIABATIC = {"compressor", "turbine", "throttle"}
+ADIABATIC = {"compressor", "turbine"}
 
 
 def _port_ids(node, port):
@@ -166,8 +166,6 @@ def solve(case) -> Result:
     eta = w_net / q_in
     if isinstance(case.size, ThermalPower):
         mdot = case.size.value / q_in
-    elif isinstance(case.size, NetPower):
-        mdot = case.size.value / w_net if w_net > 0 else float("nan")
     elif isinstance(case.size, MassFlow):
         mdot = case.size.value
     else:

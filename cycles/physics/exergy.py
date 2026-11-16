@@ -191,7 +191,7 @@ def analyse(layout, streams, blocks, props, env: Environment, mdot: float,
                 incomplete.append(bid)
 
         else:
-            # compressor, turbine, throttle, heat_exchanger, mixer, splitter
+            # compressor, turbine, heat_exchanger, mixer, splitter
             # are all adiabatic with no external heat, so the entropy
             # balance over their own streams is the generation.
             entry.update(s_gen=_entropy_balance(node, streams, props))
@@ -330,17 +330,3 @@ def _by_kind(comps):
     for k in broken:
         agg[k] = None
     return agg
-
-
-def stream_table(streams, props, env: Environment, mdot: float) -> dict:
-    """Specific exergy and exergy flow for every stream.
-
-    Specific exergy is J/kg of that stream; exergy flow is W at plant scale.
-    They are different quantities and are named differently on purpose.
-    """
-    out = {}
-    for sid, st in streams.items():
-        b = props(st.fluid)
-        e = specific(b, env, st.P, st.h)
-        out[sid] = {"e_x": e, "Ex_dot": e * st.flow * mdot}
-    return out
