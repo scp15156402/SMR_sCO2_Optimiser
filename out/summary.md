@@ -13,7 +13,7 @@ Q = 100 MWth, lifetime 10 yr, 70 USD/MWh, 7000 h/yr, 250 USD/kg, TOPSIS weights 
 | 3 | 957 | 957 | 955 | 2 | recup_pinch<5K: 2 |
 | 4 | 87 | 87 | 83 | 4 | not_solved: 3, recup_pinch<5K: 1 |
 | 5 | 293 | 293 | 232 | 61 | not_solved: 9, recup_pinch<5K: 52 |
-| 6 | 726 | 726 | 720 | 6 | recup_pinch<5K: 6 |
+| 6 | 728 | 728 | 722 | 6 | recup_pinch<5K: 6 |
 
 ## 2. Calibration (layout 2, best feasible eta)
 
@@ -36,48 +36,48 @@ Q = 100 MWth, lifetime 10 yr, 70 USD/MWh, 7000 h/yr, 250 USD/kg, TOPSIS weights 
 
 | column | value |
 |---|---|
-| ID | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 |
-| tags | knee topsis_1 |
+| ID | L6_Ph200_T335_Tt500_Pm079_Pe036_x038 |
+| tags | knee topsis_2 |
 | pressure_ratio | 2.5316456 |
 | split | 0.38 |
-| eta | 0.38718949 |
-| UA_recup_1 | 1714.508 |
-| UA_recup_2 | 1639.5375 |
-| UA_cooler_1 | 4610.1095 |
-| UA_cooler_2 | 2880.0991 |
-| UA_total | 10844.254 |
-| pinch_recup_1 | 16.16373 |
-| pinch_recup_2 | 10.49115 |
-| pinch_cooler_1 | 5.0000008 |
-| pinch_cooler_2 | 4.9999386 |
+| eta | 0.38544234 |
+| UA_recup_1 | 1700.7633 |
+| UA_recup_2 | 1611.7968 |
+| UA_cooler_1 | 4588.3685 |
+| UA_cooler_2 | 2826.7263 |
+| UA_total | 10727.655 |
+| pinch_recup_1 | 15.774101 |
+| pinch_recup_2 | 10.610013 |
+| pinch_cooler_1 | 4.9999988 |
+| pinch_cooler_2 | 4.9999507 |
 | eta_carnot | 0.6033758 |
-| eta_second_law | 0.64170536 |
+| eta_second_law | 0.63880975 |
 | layout | 6 |
-| P_comp_in_min_MPa | 3.7 |
-| W_net_MW | 38.718949 |
-| mass_t | 69.169635 |
-| volume_m3 | 138.33927 |
-| mwe_per_t | 0.55976801 |
-| hardware_usd | 17292409 |
-| electricity_usd_per_yr | 18972285 |
-| payout_usd | 1.7243044e+08 |
+| P_comp_in_min_MPa | 3.6 |
+| W_net_MW | 38.544234 |
+| mass_t | 68.878137 |
+| volume_m3 | 137.75627 |
+| mwe_per_t | 0.55960041 |
+| hardware_usd | 17219534 |
+| electricity_usd_per_yr | 18886675 |
+| payout_usd | 1.7164721e+08 |
 | M0_used | 39.059 |
 | pareto | 1 |
 | knee | 1 |
-| topsis_score | 0.80937139 |
-| topsis_rank | 1 |
-| water_flow_kg_s | 625.476 |
-| mdot_kg_s | 352.994 |
+| topsis_score | 0.80927606 |
+| topsis_rank | 2 |
+| water_flow_kg_s | 620.252 |
+| mdot_kg_s | 350.586 |
 
 ## 5. Top 5 by TOPSIS
 
 | ID | eta | eta_II | UA_total kW/K | mass t | payout M USD | MWe/t | pinch r1 | pinch r2 | pinch c1 | pinch c2 |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 | 0.38719 | 0.6417 | 10844 | 69.17 | 172.43 | 0.5598 | 16.16 | 10.49 | 5.00 | 5.00 |
+| L6_Ph200_T335_Tt500_Pm079_Pe036_x038 | 0.38544 | 0.6388 | 10728 | 68.88 | 171.65 | 0.5596 | 15.77 | 10.61 | 5.00 | 5.00 |
+| L6_Ph200_T335_Tt500_Pm079_Pe038_x038 | 0.38884 | 0.6444 | 10958 | 69.45 | 173.17 | 0.5598 | 16.54 | 10.38 | 5.00 | 5.00 |
 | L6_Ph200_T335_Tt500_Pm079_Pe037_x037 | 0.38587 | 0.6395 | 10764 | 68.97 | 171.84 | 0.5595 | 16.50 | 10.20 | 5.00 | 5.00 |
 | L6_Ph200_T335_Tt500_Pm079_Pe035_x038 | 0.38359 | 0.6357 | 10616 | 68.60 | 170.81 | 0.5592 | 15.37 | 10.73 | 5.00 | 5.00 |
-| L6_Ph200_T335_Tt500_Pm079_Pe037_x036 | 0.38457 | 0.6374 | 10690 | 68.78 | 171.24 | 0.5591 | 16.83 | 9.92 | 5.00 | 5.00 |
-| L6_Ph200_T335_Tt500_Pm080_Pe037_x038 | 0.38544 | 0.6388 | 10755 | 68.95 | 171.63 | 0.5590 | 16.44 | 10.54 | 5.00 | 5.00 |
 
 ## 5. Top 5 by efficiency
 
@@ -113,13 +113,13 @@ Q = 100 MWth, lifetime 10 yr, 70 USD/MWh, 7000 h/yr, 250 USD/kg, TOPSIS weights 
 
 | years | knee | knee payout M USD | TOPSIS #1 | its payout M USD | max payout | max payout M USD | front size |
 |---|---|---|---|---|---|---|---|
-| 5 | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 | 77.57 | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 | 77.57 | L3_Ph200_Pl077_T320_Tt500_x036 | 84.08 | 55 |
-| 10 | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 | 172.43 | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 | 172.43 | L3_Ph200_Pl077_T320_Tt500_x036 | 187.72 | 60 |
+| 5 | L6_Ph200_T335_Tt500_Pm079_Pe036_x038 | 77.21 | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 | 77.57 | L3_Ph200_Pl077_T320_Tt500_x036 | 84.08 | 55 |
+| 10 | L6_Ph200_T335_Tt500_Pm079_Pe036_x038 | 171.65 | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 | 172.43 | L3_Ph200_Pl077_T320_Tt500_x036 | 187.72 | 60 |
 | 20 | L3_Ph200_Pl077_T325_Tt500_x044 | 376.97 | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 | 362.15 | L5_Ph200_Pl077_T320_Tt500_Pm090_x035 | 395.80 | 68 |
 
 ## 6b. Strict ranking: every compressor inlet >= 7.7 MPa (data/results_econ_strict.csv)
 
-720 designs with a compressor inlet below 7.7 MPa removed (layouts left with no designs: 6); layouts [1] also unranked. The main ranking (results_econ.csv) is unchanged.
+722 designs with a compressor inlet below 7.7 MPa removed (layouts left with no designs: 6); layouts [1] also unranked. The main ranking (results_econ.csv) is unchanged.
 
 Knee: **L3_Ph200_Pl077_T330_Tt500_x043**; TOPSIS #1: **L3_Ph200_Pl077_T325_Tt500_x046**.
 
@@ -195,6 +195,7 @@ Knee: **L3_Ph200_Pl077_T330_Tt500_x043**; TOPSIS #1: **L3_Ph200_Pl077_T325_Tt500
 | all | 8 | 1455 | 1444 | 11 | 4634.5 | 0.314 |
 | all (interrupted) | 8 | 102 | 102 | 0 | 472.8 | 0.216 |
 | all | 8 | 44 | 44 | 0 | 41.2 | 1.067 |
+| all | 2 | 2 | 2 | 0 | 5.3 | 0.378 |
 
 **Grid completeness.** Every grid finished before the 15:45 hard stop (last finished 15:31); no grid is incomplete. 1011 of 1011 points attempted. Refinement grids L3_fine (33 points, 3 already in L3) and L6_fine (12 points) were added afterwards and solved completely: 1053 of 1053 points attempted.
 

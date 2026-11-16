@@ -500,5 +500,95 @@
   },
   "minutes": 1.7474089701970419,
   "verdict": "(continuing)"
+ },
+ {
+  "round": 4,
+  "added": 2,
+  "snap": {
+   "feasible": 2561,
+   "attempted": 2656,
+   "M0": 39.059,
+   "M0_ref": "L2_Ph200_Pl077_T340_Tt500",
+   "best": {
+    "1": {
+     "ID": "L1_Ph200_Pl077_T320_Tt500",
+     "eta": 0.14820082,
+     "mass": 48.685948,
+     "payout": 60446915.0
+    },
+    "2": {
+     "ID": "L2_Ph200_Pl077_T335_Tt500",
+     "eta": 0.33291541,
+     "mass": 59.644453,
+     "payout": 148217440.0
+    },
+    "3": {
+     "ID": "L3_Ph200_Pl077_T320_Tt500_x036",
+     "eta": 0.42302464,
+     "mass": 78.244393,
+     "payout": 187720980.0
+    },
+    "4": {
+     "ID": "L4_Ph200_Pl081_T320_Tt500_Pm160",
+     "eta": 0.35938419,
+     "mass": 83.796017,
+     "payout": 155149250.0
+    },
+    "5": {
+     "ID": "L5_Ph200_Pl077_T320_Tt500_Pm079_x036",
+     "eta": 0.42396647,
+     "mass": 81.001983,
+     "payout": 187493070.0
+    },
+    "6": {
+     "ID": "L6_Ph200_T320_Tt500_Pm077_Pe052_x045",
+     "eta": 0.41578234,
+     "mass": 76.606924,
+     "payout": 184581620.0
+    }
+   },
+   "topsis": {
+    "ID": "L6_Ph200_T335_Tt500_Pm079_Pe037_x038",
+    "eta": 0.38718949,
+    "mass": 69.169635,
+    "payout": 172430440.0
+   },
+   "knee": {
+    "ID": "L6_Ph200_T335_Tt500_Pm079_Pe036_x038",
+    "eta": 0.38544234,
+    "mass": 68.878137,
+    "payout": 171647210.0
+   },
+   "topsis_strict": {
+    "ID": "L3_Ph200_Pl077_T325_Tt500_x046",
+    "eta": 0.39743978,
+    "mass": 70.842004,
+    "payout": 177034990.0
+   },
+   "edges": {
+    "L2_Ph200_Pl077_T335_Tt500": [],
+    "L3_Ph200_Pl077_T320_Tt500_x036": [],
+    "L3_Ph200_Pl077_T325_Tt500_x046": [],
+    "L5_Ph200_Pl077_T320_Tt500_Pm079_x036": [],
+    "L6_Ph200_T320_Tt500_Pm077_Pe052_x045": [],
+    "L6_Ph200_T335_Tt500_Pm079_Pe036_x038": [],
+    "L6_Ph200_T335_Tt500_Pm079_Pe037_x038": []
+   }
+  },
+  "cond": {
+   "payout": true,
+   "topsis": true,
+   "edges": true
+  },
+  "recal": {
+   "old_ID": "L2_Ph200_Pl077_T340_Tt500",
+   "old_M0": 39.059,
+   "new_ID": "L2_Ph200_Pl077_T340_Tt500",
+   "new_M0": 39.059,
+   "eta": 0.33306362,
+   "changed": false
+  },
+  "minutes": 2.9457059542338055,
+  "verdict": "CONVERGED after round 4: all three stop conditions hold against round 3."
  }
 ]

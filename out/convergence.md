@@ -12,6 +12,7 @@ Stop when, against the previous round: best payout per layout (2, 3, 5, 6) moves
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 2 (start of this run) | 0 | 2515 | 39.059 (L2_Ph200_Pl077_T340_Tt500) | 148.217 / 187.721 / 187.485 / 184.581 | L6_Ph200_T335_Tt500_Pm079_Pe035_x037 (170.222 M$, 68.40 t) | L6_Ph200_T335_Tt500_Pm079_Pe035_x037 (170.222 M$, 68.40 t) | L3_Ph200_Pl077_T325_Tt500_x046 (177.035 M$, 70.84 t) | no | no | no | 0.0 |
 | 3 | 44 | 2559 | 39.059 (L2_Ph200_Pl077_T340_Tt500) | 148.217 / 187.721 / 187.493 / 184.582 | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 (172.430 M$, 69.17 t) | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 (172.430 M$, 69.17 t) | L3_Ph200_Pl077_T325_Tt500_x046 (177.035 M$, 70.84 t) | yes | no | yes | 1.7 |
+| 4 | 2 | 2561 | 39.059 (L2_Ph200_Pl077_T340_Tt500) | 148.217 / 187.721 / 187.493 / 184.582 | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 (172.430 M$, 69.17 t) | L6_Ph200_T335_Tt500_Pm079_Pe036_x038 (171.647 M$, 68.88 t) | L3_Ph200_Pl077_T325_Tt500_x046 (177.035 M$, 70.84 t) | yes | yes | yes | 2.9 |
 
 ## Best payout design per layout
 
@@ -29,6 +30,12 @@ Stop when, against the previous round: best payout per layout (2, 3, 5, 6) moves
 | 3 | 4 | L4_Ph200_Pl081_T320_Tt500_Pm160 | 0.35938 | 83.80 | 155.149 |
 | 3 | 5 | L5_Ph200_Pl077_T320_Tt500_Pm079_x036 | 0.42397 | 81.00 | 187.493 |
 | 3 | 6 | L6_Ph200_T320_Tt500_Pm077_Pe052_x045 | 0.41578 | 76.61 | 184.582 |
+| 4 | 1 | L1_Ph200_Pl077_T320_Tt500 | 0.14820 | 48.69 | 60.447 |
+| 4 | 2 | L2_Ph200_Pl077_T335_Tt500 | 0.33292 | 59.64 | 148.217 |
+| 4 | 3 | L3_Ph200_Pl077_T320_Tt500_x036 | 0.42302 | 78.24 | 187.721 |
+| 4 | 4 | L4_Ph200_Pl081_T320_Tt500_Pm160 | 0.35938 | 83.80 | 155.149 |
+| 4 | 5 | L5_Ph200_Pl077_T320_Tt500_Pm079_x036 | 0.42397 | 81.00 | 187.493 |
+| 4 | 6 | L6_Ph200_T320_Tt500_Pm077_Pe052_x045 | 0.41578 | 76.61 | 184.582 |
 
 ## Tracked winners on a free grid edge (after each round)
 
@@ -46,6 +53,13 @@ Stop when, against the previous round: best payout per layout (2, 3, 5, 6) moves
 | 3 | L5_Ph200_Pl077_T320_Tt500_Pm079_x036 | - |
 | 3 | L6_Ph200_T320_Tt500_Pm077_Pe052_x045 | - |
 | 3 | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 | - |
+| 4 | L2_Ph200_Pl077_T335_Tt500 | - |
+| 4 | L3_Ph200_Pl077_T320_Tt500_x036 | - |
+| 4 | L3_Ph200_Pl077_T325_Tt500_x046 | - |
+| 4 | L5_Ph200_Pl077_T320_Tt500_Pm079_x036 | - |
+| 4 | L6_Ph200_T320_Tt500_Pm077_Pe052_x045 | - |
+| 4 | L6_Ph200_T335_Tt500_Pm079_Pe036_x038 | - |
+| 4 | L6_Ph200_T335_Tt500_Pm079_Pe037_x038 | - |
 
 ## Earlier rounds (layout 1 still ranked, no strict ranking)
 
@@ -57,4 +71,4 @@ Stop when, against the previous round: best payout per layout (2, 3, 5, 6) moves
 
 ## Verdict
 
-(continuing)
+CONVERGED after round 4: all three stop conditions hold against round 3.
