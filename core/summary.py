@@ -45,7 +45,12 @@ def main():
           f"{config.USD_PER_MWH:g} USD/MWh, {config.HOURS_PER_YEAR:g} h/yr, "
           f"{config.USD_PER_KG:g} USD/kg, TOPSIS weights {config.TOPSIS_WEIGHTS}, "
           f"cooler slices {config.COOLER_NODES} (sweep) / 100 (states), "
-          f"STRICT_INLET_PRESSURE = {config.STRICT_INLET_PRESSURE}.", ""]
+          f"STRICT_INLET_PRESSURE = {config.STRICT_INLET_PRESSURE}.", "",
+          f"**Excluded from the ranking:** layout(s) "
+          f"{', '.join(map(str, config.RANK_EXCLUDE_LAYOUTS)) or 'none'} "
+          f"(RANK_EXCLUDE_LAYOUTS). Their rows stay in results_econ.csv with empty "
+          f"pareto/knee/topsis columns; Pareto front, knee and TOPSIS cover the other layouts only.", ""]
+    ranked = [r for r in econ if r["topsis_rank"] != ""]
 
     # 1. per layout
     n_in = Counter(L(r["ID"]) for r in inputs)
@@ -97,21 +102,45 @@ def main():
     N = config.N_TOP
     for title, key, rev in [("TOPSIS", "topsis_score", True), ("efficiency", "eta", True),
                             ("lowest mass", "mass_t", False), ("payout", "payout_usd", True)]:
-        top = sorted(econ, key=lambda r: float(r[key]), reverse=rev)[:N]
+        pool = ranked if key == "topsis_score" else econ
+        top = sorted(pool, key=lambda r: float(r[key]), reverse=rev)[:N]
         md += [f"## 5. Top {N} by {title}", "", _table(brief_head, [row_brief(r) for r in top]), ""]
 
     # 6. lifetime sensitivity
     sens = []
     for yrs in (5, 10, 20):
-        e = compute(raw, lifetime_years=yrs)
-        k = next(r for r in e if r["knee"])
+        e = [r for r in compute(raw, lifetime_years=yrs) if r["topsis_rank"] != ""]
+        k = next(r for r in e if r["knee"] == 1)
         t = next(r for r in e if r["topsis_rank"] == 1)
         p = max(e, key=lambda r: r["payout_usd"])
         sens.append([yrs, k["ID"], f"{k['payout_usd']/1e6:.2f}", t["ID"], f"{t['payout_usd']/1e6:.2f}",
                      p["ID"], f"{p['payout_usd']/1e6:.2f}", sum(r["pareto"] for r in e)])
-    md += ["## 6. Lifetime sensitivity (recomputed in memory)", "",
+    md += ["## 6. Lifetime sensitivity (recomputed in memory, main ranking)", "",
            _table(["years", "knee", "knee payout M USD", "TOPSIS #1", "its payout M USD",
                    "max payout", "max payout M USD", "front size"], sens), ""]
+
+    # 6b. strict reading of the 7.7 MPa limit
+    strict = [r for r in _read("results_econ_strict.csv") if r["topsis_rank"] != ""]
+    if strict:
+        removed = sorted({r["layout"] for r in econ} - {r["layout"] for r in _read("results_econ_strict.csv")})
+        front = sorted((r for r in strict if r["pareto"] == "1"), key=lambda r: float(r["mass_t"]))
+        kn_s = next(r for r in strict if r["knee"] == "1")
+        top_s = sorted(strict, key=lambda r: int(r["topsis_rank"]))[:10]
+        md += ["## 6b. Strict ranking: every compressor inlet >= "
+               f"{config.P_INLET_MIN_MPA:g} MPa (data/results_econ_strict.csv)", "",
+               f"{len(econ) - len(_read('results_econ_strict.csv'))} designs with a compressor inlet below "
+               f"{config.P_INLET_MIN_MPA:g} MPa removed (layouts left with no designs: "
+               f"{', '.join(removed) or 'none'}); layouts {config.RANK_EXCLUDE_LAYOUTS} also unranked. "
+               "The main ranking (results_econ.csv) is unchanged.", "",
+               f"Knee: **{kn_s['ID']}**; TOPSIS #1: **{top_s[0]['ID']}**.", "",
+               "### Pareto front", "",
+               _table(["ID", "mass t", "payout M USD"],
+                      [[r["ID"], _g(r["mass_t"], ".2f"), _g(float(r["payout_usd"]) / 1e6, ".2f")]
+                       for r in front]), "",
+               "### TOPSIS top 10", "",
+               _table(["rank", "ID", "score", "mass t", "payout M USD"],
+                      [[r["topsis_rank"], r["ID"], _g(r["topsis_score"], ".5f"), _g(r["mass_t"], ".2f"),
+                        _g(float(r["payout_usd"]) / 1e6, ".2f")] for r in top_s]), ""]
 
     # 7. runs and notes
     md += ["## 7. Runs, skipped layouts and failed checks", ""]

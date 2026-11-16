@@ -30,3 +30,32 @@ GRIDS = {
     "L6_fine": dict(layout=6, P_high=[200], P_mid=[77], P_exh=[45, 55], T_in=[320, 360],
         T_turb=[500], split=[35, 45, 50]),
 }
+
+# refinement round 1 (core/refine.py)
+GRIDS.update({
+    'W1_L3': dict(layout=3, P_high=[200], P_low=(77, 85, 2), T_in=(320, 360, 5), split=(30, 48, 1), T_turb=[500]),
+    'W1_L6': dict(layout=6, P_high=[200], P_mid=(77, 85, 4), P_exh=(40, 65, 5), T_in=(320, 360, 10), split=(30, 50, 5), T_turb=[500]),
+    'W1_L5': dict(layout=5, P_high=[200], P_low=[77, 80], T_in=(320, 340, 10), split=(30, 42, 2), P_mid=(90, 110, 10), T_turb=[500]),
+    'W1_L2': dict(layout=2, P_high=[200], P_low=(77, 82, 1), T_in=(320, 360, 5), T_turb=[500]),
+    'W1_L4': dict(layout=4, P_high=[200], P_low=(77, 85, 4), T_in=(320, 340, 10), P_mid=(100, 160, 20), T_turb=[500]),
+})
+
+# refinement round 2 (core/refine.py)
+GRIDS.update({
+    'W2_L5a': dict(layout=5, T_turb=[500], P_high=[200], P_low=[77], T_in=[320], P_mid=[80, 90], split=[35, 36, 37]),
+    'W2_L5b': dict(layout=5, T_turb=[500], P_high=[200], P_low=[77], T_in=[325, 330, 335], P_mid=[80, 90], split=[42, 44, 46]),
+    'W2_L6a': dict(layout=6, T_turb=[500], P_high=[200], T_in=[320], P_mid=[77], P_exh=[53, 55, 57], split=[43, 45, 47]),
+    'W2_L6b': dict(layout=6, T_turb=[500], P_high=[200], T_in=[335, 340, 345], P_mid=[79, 81, 83], P_exh=[30, 35, 40], split=[33, 35, 37]),
+})
+
+# refinement round 3 (core/refine.py)
+GRIDS.update({
+    'W3_L5d': dict(layout=5, T_turb=[500], P_high=[200], P_low=[77], T_in=[320], P_mid=[78, 79, 80], split=[36]),
+    'W3_L6e': dict(layout=6, T_turb=[500], P_high=[200], T_in=[320], P_mid=[77], P_exh=[52, 53, 54], split=[44, 45, 46]),
+    'W3_L6f': dict(layout=6, T_turb=[500], P_high=[200], T_in=[335], P_mid=[78, 79, 80], P_exh=[33, 35, 37], split=[36, 37, 38]),
+})
+
+# refinement round 4 (core/refine.py)
+GRIDS.update({
+    'W4_L6f': dict(layout=6, T_turb=[500], P_high=[200], T_in=[335], P_mid=[79], P_exh=[36, 37, 38], split=[38]),
+})

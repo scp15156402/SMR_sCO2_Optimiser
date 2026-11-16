@@ -2,13 +2,18 @@
 
     python -m core.solve_points [--grid NAME] [--ids ID ...] [--limit N] [--workers N]
 
-Resumable: every ID already in either output file is skipped. Parallel: a
-multiprocessing pool solves, only the main process writes, one row per
-finished point, flushed immediately, so Ctrl+C leaves both files intact.
+    [--deadline HH:MM] [--point-timeout S] [--stall S]
+
+Resumable: every ID already in either output file is skipped. Parallel: one
+long-lived worker process per slot solves, only the main process writes, one
+row per finished point, flushed immediately, so Ctrl+C leaves both files intact.
+A point running longer than --point-timeout is killed and recorded as
+"timeout"; if no point finishes for --stall seconds the run exits with code 3.
 """
 import argparse
 import csv
 import multiprocessing as mp
+import multiprocessing.connection
 import os
 import signal
 import time
@@ -28,6 +33,10 @@ INF_COLUMNS = ["ID", "layout", "reason"]
 PROGRESS_EVERY = 50
 
 
+POINT_TIMEOUT_S = 600      # a point still running after this is killed and recorded as "timeout"
+STALL_S = 3600             # no point finished for this long: stop with an error (exit code 3)
+
+
 def _work(id_):
     return id_, *evaluate(id_)
 
@@ -35,6 +44,89 @@ def _work(id_):
 def _ignore_sigint():
     """Workers ignore Ctrl+C; the main process handles it and stops the pool."""
     signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+
+def _worker_loop(conn):
+    """Long-lived worker: receive an ID, send back (id, status, payload); None ends it."""
+    _ignore_sigint()
+    while True:
+        id_ = conn.recv()
+        if id_ is None:
+            return
+        conn.send(_work(id_))
+
+
+class _Slot:
+    """One worker process with its own pipe, so a hung point can be killed alone."""
+    def __init__(self):
+        self.conn, child = mp.Pipe()
+        self.proc = mp.Process(target=_worker_loop, args=(child,), daemon=True)
+        self.proc.start()
+        child.close()
+        self.id, self.t = None, None
+
+    def give(self, id_):
+        self.conn.send(id_)
+        self.id, self.t = id_, time.time()
+
+    def kill(self):
+        self.proc.terminate()
+        self.proc.join()
+        self.conn.close()
+
+
+def _run_points(todo, workers, point_timeout, stall, deadline=None, deadline_label=""):
+    """Yield (id, status, payload) as points finish. Points over `point_timeout`
+    seconds are killed and yielded as infeasible "timeout"; a dead worker's point
+    as "error: worker died". Raises SystemExit(3) if nothing finishes for `stall` s,
+    KeyboardInterrupt at `deadline` (epoch seconds)."""
+    queue = list(reversed(todo))
+    slots = [_Slot() for _ in range(workers)]
+    last = time.time()
+    try:
+        while queue or any(s.id for s in slots):
+            if deadline is not None and time.time() >= deadline:
+                print(f"\ndeadline {deadline_label} reached")
+                raise KeyboardInterrupt
+            for s in slots:
+                if s.id is None and queue:
+                    s.give(queue.pop())
+            busy = [s for s in slots if s.id]
+            ready = mp.connection.wait([s.conn for s in busy], timeout=2)
+            for i, s in enumerate(slots):
+                if s.id is None:
+                    continue
+                out, dead = None, True
+                if s.conn in ready:
+                    try:
+                        out, dead = s.conn.recv(), False
+                    except (EOFError, OSError):
+                        out = (s.id, "infeasible", "error: worker died")
+                elif not s.proc.is_alive():
+                    out = (s.id, "infeasible", "error: worker died")
+                elif time.time() - s.t > point_timeout:
+                    out = (s.id, "infeasible", f"timeout (>{point_timeout:g} s)")
+                if out is None:
+                    continue
+                if dead:              # replace a killed or crashed worker
+                    s.kill()
+                    slots[i] = s = _Slot()
+                s.id = s.t = None
+                last = time.time()
+                yield out
+            if time.time() - last > stall:
+                print(f"\nSTUCK: no point finished for {stall:g} s", flush=True)
+                raise SystemExit(3)
+    finally:
+        for s in slots:
+            if s.id is None and s.proc.is_alive():
+                try:
+                    s.conn.send(None)
+                except OSError:
+                    pass
+            s.proc.join(timeout=5)
+            if s.proc.is_alive():
+                s.kill()
 
 
 def _repair(path, columns):
@@ -83,6 +175,10 @@ def main(argv=None):
     ap.add_argument("--limit", type=int, help="solve at most N new points this run")
     ap.add_argument("--workers", type=int, default=config.SWEEP_WORKERS)
     ap.add_argument("--deadline", help="HH:MM local time: stop cleanly then, as on Ctrl+C")
+    ap.add_argument("--point-timeout", type=float, default=POINT_TIMEOUT_S,
+                    help="seconds before a point is killed and recorded as 'timeout'")
+    ap.add_argument("--stall", type=float, default=STALL_S,
+                    help="seconds with no finished point before stopping with exit code 3")
     args = ap.parse_args(argv)
     deadline = None
     if args.deadline:
@@ -121,19 +217,9 @@ def main(argv=None):
     reasons = Counter()
     t0 = time.perf_counter()
     interrupted = False
-    pool = mp.Pool(workers, initializer=_ignore_sigint)
     try:
-        it = pool.imap_unordered(_work, todo, chunksize=1)
-        while True:
-            if deadline is not None and time.time() >= deadline:
-                print(f"\ndeadline {args.deadline} reached")
-                raise KeyboardInterrupt
-            try:
-                id_, status, payload = it.next(timeout=2)
-            except mp.TimeoutError:
-                continue
-            except StopIteration:
-                break
+        for id_, status, payload in _run_points(todo, workers, args.point_timeout,
+                                                args.stall, deadline, args.deadline):
             if status == "feasible":
                 raw_w.writerow([payload[c] for c in RAW_COLUMNS])
                 raw_fh.flush()
@@ -150,13 +236,10 @@ def main(argv=None):
                 left = el / n * (total - n)
                 print(f"  {n}/{total}  feasible {n_feas}  infeasible {n_inf}  "
                       f"elapsed {_fmt_s(el)}  left ~{_fmt_s(left)}", flush=True)
-        pool.close()
     except KeyboardInterrupt:
         interrupted = True
         print("\ninterrupted: stopping workers; files are intact")
-        pool.terminate()
     finally:
-        pool.join()
         raw_fh.close()
         inf_fh.close()
 

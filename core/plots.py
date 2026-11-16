@@ -195,6 +195,9 @@ def main():
     for s in _read(DATA / "states.csv"):
         states[s["ID"]].append(s)
         tags[s["ID"]] = s["tags"].split()
+    for folder in FOLDERS.values():                 # drop diagrams of designs no longer tagged
+        for old in (OUT / folder).glob("TS_*.png"):
+            old.unlink()
     n_ts = 0
     for id_, ts in sorted(tags.items()):
         for t in ts:
