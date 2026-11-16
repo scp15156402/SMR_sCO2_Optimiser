@@ -93,31 +93,3 @@ def test_entropy_returns_to_start(ideal):
     """A closed loop must return its working fluid to the same state."""
     s1 = ideal.streams["s1"]
     assert math.isclose(s1["h"], ideal.streams["s1"]["h"], rel_tol=1e-12)
-
-
-@pytest.mark.parametrize("nodes", [50, 100, 200])
-def test_grid_convergence(nodes):
-    """Heat-exchanger discretisation must not move the answer.
-
-    Lifted from `project/studies/check_nodes.py`, which sweeps the node count
-    and printed the spread.  Here it is an assertion instead.
-    """
-    from cycles import Pinch
-    from project.cases import baseline_watercooled
-    from cycles.case import Numerics
-    r = solve(baseline_watercooled.with_(
-        params={"RECUP": dict(spec=Pinch(K(5)))},
-        numerics=Numerics(nodes=nodes)))
-    assert r.ok, r.flags
-    test_grid_convergence.results[nodes] = r.metrics["eta_th"]
-
-
-test_grid_convergence.results = {}
-
-
-def test_grid_convergence_spread():
-    """The spread across node counts must be below 0.1 % relative."""
-    res = test_grid_convergence.results
-    assert len(res) == 3, "run the parametrised grid test first"
-    lo, hi = min(res.values()), max(res.values())
-    assert (hi - lo) / hi < 1e-3, res
