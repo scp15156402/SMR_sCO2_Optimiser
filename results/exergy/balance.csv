@@ -1,5 +1,0 @@
-layout,eta_th_pct,supplied_mw,to_work_mw,destroyed_known_mw,shed_mw,residual,complete,incomplete_reason
-recuperated,36.5412,54.87069,36.54122,17.28855,1.04092,-5.431e-10,no,
-recompression,42.248,56.64796,42.24802,13.45263,0.94731,-3.881e-08,no,
-partial cooling,40.2749,55.00776,40.27492,13.75317,0.97968,-2.747e-08,no,
-intercooled,36.2441,54.63473,36.24411,17.34483,1.04579,-5.480e-10,no,

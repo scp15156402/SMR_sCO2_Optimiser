@@ -1,5 +1,0 @@
-layout,eta_th_pct,W_net_mwe,back_work_ratio,mdot_kg_s,recuperator_ua_kw_k,cooler_ua_kw_k,total_ua_kw_k,exergy_destroyed_mw,delta_eta_points,ua_ratio_vs_recuperated
-recuperated,36.5412,36.5412,0.17639,381.3629,3966.53,8418.98,12385.51,17.2885,0.0,1.0
-recompression,42.248,42.248,0.26756,495.8103,9936.46,7661.87,17598.33,13.4526,5.7068,1.4209
-partial cooling,40.2749,40.2749,0.27499,387.9464,5356.24,7909.47,13265.71,13.7532,3.7337,1.0711
-intercooled,36.2441,36.2441,0.15946,370.6469,4873.19,10758.5,15631.69,17.3448,-0.2971,1.2621
