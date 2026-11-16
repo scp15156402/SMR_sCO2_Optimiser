@@ -25,4 +25,8 @@ GRIDS = {
     "L6": dict(layout=6,
         P_high=(180, 200, 20), P_mid=(77, 87, 5), P_exh=(55, 75, 10),
         T_in=(320, 400, 40), T_turb=[500], split=(20, 40, 10)),
+    "L3_fine": dict(layout=3, P_high=[200], P_low=[77], T_in=(320, 340, 10),
+        T_turb=[500], split=(30, 40, 1)),
+    "L6_fine": dict(layout=6, P_high=[200], P_mid=[77], P_exh=[45, 55], T_in=[320, 360],
+        T_turb=[500], split=[35, 45, 50]),
 }

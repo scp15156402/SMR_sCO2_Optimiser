@@ -1,4 +1,4 @@
-**Grid completeness.** Every grid finished before the 15:45 hard stop (last finished 15:31); no grid is incomplete. 1011 of 1011 points attempted.
+**Grid completeness.** Every grid finished before the 15:45 hard stop (last finished 15:31); no grid is incomplete. 1011 of 1011 points attempted. Refinement grids L3_fine (33 points, 3 already in L3) and L6_fine (12 points) were added afterwards and solved completely: 1053 of 1053 points attempted.
 
 **Skipped layouts / failed checks.**
 
