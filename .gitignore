@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# LaTeX build artefacts. The source is theory_and_implementation.tex and
+# the deliverable is documentation/theory_and_implementation.pdf, which
+# build.py copies up; everything else here is regenerated on every build.
+documentation/latex/*.aux
+documentation/latex/*.fdb_latexmk
+documentation/latex/*.fls
+documentation/latex/*.log
+documentation/latex/*.out
+documentation/latex/*.synctex.gz
+documentation/latex/*.toc
+documentation/latex/theory_and_implementation.pdf
+reports/*.aux
+reports/*.fdb_latexmk
+reports/*.fls
+reports/*.log
+reports/*.out
+reports/*.synctex.gz
+reports/*.toc
+
+# Google Drive leaves one of these in every synced directory.
+desktop.ini
+
+# Archives and backups do not belong in the history.
+*.zip
+
+# NOT ignored, deliberately:
+#   results/            study output. Regenerable, but the document cites
+#                       it, so the committed state must match the PDF.
+#   documentation/latex/code/   extracted code excerpts
+#   documentation/latex/data/   plot data
+#   tests/baseline.json  the regression reference

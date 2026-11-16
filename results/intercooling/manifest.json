@@ -1,0 +1,57 @@
+{
+  "study": "intercooling",
+  "purpose": "Sweep the intercooled layout's intermediate pressure -- its free variable -- and test it against the plain recuperated cycle.",
+  "script": "project/studies/intercooling.py",
+  "command": "python -m project.studies.intercooling",
+  "written_utc": "2026-11-07T03:17:21Z",
+  "source_fingerprint": {
+    "sha256": "65f1e4b8ee4f7fb1",
+    "files": 73
+  },
+  "environment": {
+    "python": "3.13.18",
+    "platform": "Linux-6.18.44-fc-v300-x86_64-with-glibc2.39",
+    "coolprop": "8.0.0"
+  },
+  "inputs": {
+    "P_mid_mpa": [
+      7.9,
+      8.2,
+      8.5,
+      9.0,
+      10.0,
+      11.0,
+      12.41,
+      14.0,
+      16.0,
+      18.0
+    ],
+    "P_low_mpa": 7.7,
+    "P_high_mpa": 20.0,
+    "geometric_mean_mpa": 12.4097,
+    "recuperator_pinch_k": 5.0,
+    "reference_eta_pct": 36.5412
+  },
+  "outputs": [
+    {
+      "file": "pressure_sweep.csv",
+      "rows": 10,
+      "columns": [
+        "P_mid_mpa",
+        "eta_th_pct",
+        "back_work_ratio",
+        "recup_ua_kw_k",
+        "delta_eta_points",
+        "ua_ratio_vs_recuperated",
+        "is_geometric_mean"
+      ]
+    }
+  ],
+  "notes": [
+    "Best 36.453 % at 7.90 MPa against the recuperated baseline's 36.541 %.",
+    "The geometric-mean rule is an ideal-gas result and sCO2 is not an ideal gas here, so it is checked rather than assumed.",
+    "Intercooling reduces compressor work as intended; it loses overall because the heat dumped in the intercooler is heat the recuperator would have recovered.",
+    "The intermediate pressure that minimises back-work ratio is not the one that maximises efficiency. The recuperator penalty, not the compression saving, sets the optimum.",
+    "Efficiency improves monotonically as the intermediate pressure approaches the compressor inlet, i.e. as the intercooler is switched off. The conclusion is not that the intermediate pressure was badly chosen; it is that the layout does not pay here."
+  ]
+}

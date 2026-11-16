@@ -1,0 +1,92 @@
+% =====================================================================
+%  ME 306 -- sCO2 Brayton cycle project
+%  Final report
+%  Build:  python reports/build.py
+% =====================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue]{hyperref}
+
+\pgfplotsset{compat=1.17}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds}
+\sisetup{per-mode=symbol, detect-weight=true}
+
+% ---------------------------------------------------------------- styles
+\definecolor{cold}{RGB}{214,230,246}
+\definecolor{hot}{RGB}{250,228,215}
+\definecolor{neut}{RGB}{238,238,234}
+\definecolor{accent}{RGB}{83,74,183}
+\definecolor{warn}{RGB}{153,60,29}
+\definecolor{chalk}{RGB}{47,102,78}
+\definecolor{chalkbg}{RGB}{240,247,243}
+
+\tikzset{
+  blk/.style   ={draw=black!55, rounded corners=2pt, align=center,
+                 font=\small, minimum height=8mm, minimum width=22mm,
+                 inner sep=3pt, line width=0.4pt},
+  coldblk/.style={blk, fill=cold},
+  hotblk/.style ={blk, fill=hot},
+  neutblk/.style={blk, fill=neut},
+  ar/.style    ={-{Stealth[length=2mm,width=1.6mm]}, line width=0.5pt},
+  lbl/.style   ={font=\scriptsize, inner sep=1.5pt},
+}
+
+% caveat box: every one states the choice and what it costs
+\newtcolorbox{caveat}[1][]{
+  enhanced, breakable, colback=warn!4, colframe=warn!60,
+  boxrule=0.4pt, left=3mm, right=3mm, top=2mm, bottom=2mm,
+  fonttitle=\bfseries\small, coltitle=warn!80!black,
+  title={Caveat},#1}
+
+\newtcolorbox{choicebox}[1][]{
+  enhanced, breakable, colback=accent!4, colframe=accent!50,
+  boxrule=0.4pt, left=3mm, right=3mm, top=2mm, bottom=2mm,
+  fonttitle=\bfseries\small, coltitle=accent!80!black,
+  title={Implementation},#1}
+
+\newcommand{\code}[1]{\texttt{\small #1}}
+
+% ------- code excerpts, pulled from source by make_code_snippets.py -------
+\lstdefinestyle{pyst}{
+  language=Python,
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{chalk!95!black}\bfseries,
+  commentstyle=\color{chalk!50!black}\itshape,
+  stringstyle=\color{warn!75!black},
+  showstringspaces=false,
+  breaklines=true, breakatwhitespace=true,
+  columns=fullflexible, keepspaces=true,
+  tabsize=4, aboveskip=0pt, belowskip=0pt,
+}
+
+\newtcbinputlisting{\codefile}[2][]{
+  listing only, enhanced, breakable,
+  colback=chalkbg, colframe=chalk!55,
+  boxrule=0.4pt, left=3mm, right=3mm, top=2mm, bottom=1.5mm,
+  fonttitle=\bfseries\scriptsize\ttfamily, coltitle=chalk!85!black,
+  attach boxed title to top left={xshift=4mm, yshift=-2.4mm},
+  boxed title style={colback=chalkbg, colframe=chalk!55, boxrule=0.4pt,
+                     sharp corners, size=small},
+  listing file={code/#2}, listing style=pyst, #1}
+
+% ---------------------------------------------------------------- title
+\title{\vspace{-1.5cm}\Large\bfseries
+  Supercritical \ce{CO2} Brayton Cycle for a Compact SMR\\[2mm]
+  \large Theory and Implementation}
+\author{\normalsize ME 306 -- Advanced Thermodynamics}
+\date{\normalsize Living document. Last rebuilt \today.}
+
+\usepackage[version=4]{mhchem}
+

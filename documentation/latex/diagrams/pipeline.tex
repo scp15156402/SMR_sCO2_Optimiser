@@ -1,0 +1,19 @@
+% How a number in this project is produced. Drawn once, used by both the
+% report (Methodology) and the master document.
+\begin{tikzpicture}[node distance=5.5mm and 7mm]
+  \node[coldblk, minimum width=26mm] (case)  {Case\\\scriptsize pressures, duties, limits};
+  \node[neutblk, minimum width=26mm, right=of case]  (solve) {Solver\\\scriptsize sequential-modular};
+  \node[neutblk, minimum width=26mm, right=of solve] (metr)  {Assessment\\\scriptsize $\eta$, mass, exergy};
+  \node[hotblk,  minimum width=26mm, below=9mm of metr]  (csv)  {\code{results/}\\\scriptsize CSV + manifest};
+  \node[hotblk,  minimum width=26mm, left=of csv]  (tabg) {\code{make\_tables}\\\scriptsize generated \code{.tex}};
+  \node[coldblk, minimum width=26mm, left=of tabg] (doc)  {This document\\\scriptsize table or \code{\textbackslash dat}};
+
+  \draw[ar] (case)  -- (solve);
+  \draw[ar] (solve) -- (metr);
+  \draw[ar] (metr)  -- (csv);
+  \draw[ar] (csv)   -- (tabg);
+  \draw[ar] (tabg)  -- (doc);
+
+  \node[lbl, above=0.5mm of solve] {converged tear};
+  \node[lbl, below=0.5mm of csv]   {source fingerprint};
+\end{tikzpicture}

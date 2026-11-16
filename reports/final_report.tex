@@ -1,0 +1,62 @@
+\input{_preamble}
+
+\title{\vspace{-1.5cm}\textbf{Supercritical \ce{CO2} Brayton Cycle for a
+100\,MW\textsubscript{th} Compact SMR}\\[2mm]
+\large Layout and recuperator trade-off under size and mass constraints}
+\author{ME 306 --- Advanced Thermodynamics}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1cm}
+
+\begin{abstract}
+\noindent
+A supercritical \ce{CO2} closed Brayton cycle was modelled for a
+\SI{100}{\mega\watt} thermal compact SMR and four configurations were
+compared at equal thermodynamic quality of heat exchange: simple
+recuperated, recompression, partial cooling and intercooled. The
+decision variables named in the brief were swept, candidates were
+filtered against its constraints, and a Pareto front was constructed
+over efficiency, mass, cost proxy and operating margin.
+
+\textbf{The recommendation is a recompression cycle at
+\SI{20}{\mega\pascal} with a split fraction of \num{0.25} and a
+\SI{35}{\celsius} compressor inlet}, giving \SI{41.41}{\percent}
+thermal efficiency and a second-law efficiency of \num{0.684} for
+\SI{87.0}{\tonne} of power-conversion hardware ---
+\SI{0.476}{\mega\watt_e\per\tonne}, with \SI{4.02}{\kelvin} of margin
+above the critical temperature. Against the best feasible recuperated
+design it buys \num{4.06} efficiency points for \SI{18.5}{\tonne},
+paying back in \num{2.3} years on the brief's cost proxy.
+
+Two results are worth more than the selection itself. The optimum
+compressor inlet is \emph{not} at the critical point: moving from
+\num{32} to \SI{35}{\celsius} makes compression about
+\SI{60}{\percent} more expensive per kilogram and efficiency
+nonetheless \emph{rises}, because the warmer inlet eases the
+capacity-rate mismatch and the reactor supplies \SI{15}{\percent} less
+heat. And intercooling loses at every intermediate pressure swept: it
+does reduce compressor work, but the heat it dumps is heat the
+recuperator would have recovered.
+
+Every number in this report was produced by a script in the
+repository and read from a saved result file; none was transcribed by
+hand. The mass, cost and optimisation conclusions rest on the brief's
+illustrative coefficients and are qualified accordingly throughout.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% Where this document keeps the generated tables, plot data and
+% schematics. The body is shared with the master document, which sits in
+% a different directory and defines these differently -- so the body
+% itself contains no relative paths.
+\newcommand{\tbl}[1]{../documentation/latex/tables/#1}
+\newcommand{\dat}[1]{../documentation/latex/data/#1}
+\newcommand{\dgm}[1]{../documentation/latex/diagrams/#1}
+
+\input{report_body}
+
+\end{document}

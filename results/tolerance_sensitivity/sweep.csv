@@ -1,0 +1,17 @@
+setting,value,eta_th_pct,delta_points,recup_ua_kw_k,delta_ua_pct,solved,reason
+tol,1e-06,,,,,no,exergy balance does not close: residual 5.3e-06 of the exergy supplied. Suspect a sign convention or a component whose entropy terms are incomplete.
+tol,1e-07,41.40970571,-9.55e-06,11487.4089,-9.1e-05,yes,
+tol,1e-08,41.40971526,0.0,11487.4193,0.0,yes,
+tol,1e-09,41.40971641,1.15e-06,11487.4206,1.1e-05,yes,
+tol,1e-10,41.40971651,1.25e-06,11487.4207,1.2e-05,yes,
+nodes,25,41.40971526,0.0,11492.0862,0.040626,yes,
+nodes,50,41.40971526,0.0,11488.3562,0.008156,yes,
+nodes,100,41.40971526,0.0,11487.4193,0.0,yes,
+nodes,200,41.40971526,0.0,11487.1848,-0.002042,yes,
+nodes,400,41.40971526,0.0,11487.1262,-0.002552,yes,
+relax,0.5,41.40971519,-6e-08,11487.4193,-1e-06,yes,
+relax,0.7,41.40971525,-1e-08,11487.4193,-0.0,yes,
+relax,1.0,41.40971526,0.0,11487.4193,0.0,yes,
+energy_tol,0.01,41.40971526,0.0,11487.4193,0.0,yes,
+energy_tol,0.001,41.40971526,0.0,11487.4193,0.0,yes,
+energy_tol,0.0001,41.40971526,0.0,11487.4193,0.0,yes,

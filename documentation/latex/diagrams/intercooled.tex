@@ -1,0 +1,26 @@
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \node[coldblk, minimum width=18mm] (pc)  at (0,0.2)   {Precooler};
+  \node[coldblk, minimum width=18mm] (lpc) at (0,2.6)   {LP comp.};
+  \node[coldblk, minimum width=18mm] (ic)  at (2.4,2.6) {Intercooler};
+  \node[coldblk, minimum width=18mm] (hpc) at (4.8,2.6) {HP comp.};
+  \node[neutblk, minimum height=24mm, minimum width=22mm] (rec) at (7.9,1.4) {};
+  \node[font=\scriptsize] at (7.9,2.15) {cold};
+  \node[font=\small]      at (7.9,1.40) {Recuperator};
+  \node[font=\scriptsize] at (7.9,0.65) {hot};
+  \node[hotblk, minimum width=18mm] (heat) at (11.3,2.6) {Heater};
+  \node[hotblk, minimum width=18mm] (turb) at (11.3,0.2) {Turbine};
+
+  \coordinate (ci) at ($(rec.west)+(0,1.2)$);
+  \coordinate (co) at ($(rec.east)+(0,1.2)$);
+  \coordinate (hi) at ($(rec.east)+(0,-1.2)$);
+  \coordinate (ho) at ($(rec.west)+(0,-1.2)$);
+
+  \draw[ar] (pc)   -- node[lbl,left]{1} (lpc);
+  \draw[ar] (lpc)  -- node[lbl,above]{2} (ic);
+  \draw[ar] (ic)   -- node[lbl,above]{3} (hpc);
+  \draw[ar] (hpc)  -- node[lbl,above]{4} (ci);
+  \draw[ar] (co)   -- node[lbl,above]{5} (heat);
+  \draw[ar] (heat) -- node[lbl,right]{6} (turb);
+  \draw[ar] (turb) -- node[lbl,above]{7} (hi);
+  \draw[ar] (ho)   -- node[lbl,above]{8} (pc);
+\end{tikzpicture}

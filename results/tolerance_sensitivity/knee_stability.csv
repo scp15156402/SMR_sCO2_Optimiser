@@ -1,0 +1,4 @@
+nodes,candidates,feasible,front_size,selected,eta_th_pct,mass_t
+25,43,36,5,recompression 20MPa x=0.25 35C,41.4097,87.045
+100,43,36,5,recompression 20MPa x=0.25 35C,41.4097,87.0334
+400,43,36,6,recompression 20MPa x=0.25 35C,41.4097,87.0326

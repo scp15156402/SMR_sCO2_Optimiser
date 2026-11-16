@@ -1,0 +1,962 @@
+% =====================================================================
+\section{Introduction and objectives}
+
+A small modular reactor is factory-built and shipped, so its power
+conversion system has to be compact. That is the entire reason for
+considering supercritical \ce{CO2} rather than steam: near its critical
+point (\SI{7.38}{\mega\pascal}, \SI{30.98}{\celsius}) \ce{CO2} is dense
+and compresses with very little work, which shrinks both the compressor
+duty and the machinery.
+
+The difficulty is that the benefit depends on the layout, and the
+layouts that raise efficiency add hardware --- which attacks the
+compactness that motivated the choice in the first place. The task is
+therefore not to maximise efficiency. It is to find where the extra
+hardware stops paying for itself, and to defend one configuration.
+
+\subsection*{What was required}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{5.6cm}p{8.4cm}@{}}
+\toprule
+Objective 1 & Maximise net thermal efficiency \\
+Objective 2 & Minimise PCS mass and volume \\
+Objective 3 & Minimise the cost proxy \\
+Objective 4 & Maximise compressor-inlet margin above the critical
+point \\
+Reported, not optimised & Overall second-law efficiency \\
+\midrule
+\multicolumn{2}{@{}l}{\textbf{Constraints}} \\
+\multicolumn{2}{@{}p{14cm}}{Compressor inlet $\ge$
+\SI{32}{\celsius} and $\ge$ \SI{7.7}{\mega\pascal}; recuperator pinch
+$\ge$ \SI{5}{\kelvin}; cycle pressure $\le$ \SI{20}{\mega\pascal};
+turbine inlet $\le$ \SI{500}{\celsius}; split fraction $\le 0.5$.} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{Design basis}
+
+\SI{100}{\mega\watt} thermal, indirect heater. Turbine inlet
+\SI{500}{\celsius} at \SI{20}{\mega\pascal}; compressor inlet
+\SI{32}{\celsius} at \SI{7.7}{\mega\pascal}; compressor isentropic
+efficiency \num{0.89}, turbine \num{0.90}; recuperator effectiveness
+\num{0.90} on the first pass, superseded by a \SI{5}{\kelvin} pinch
+specification for all comparisons; cooling water at
+\SI{25}{\celsius}; \SI{7000}{\hour} of operation a year.
+
+\begin{caveat}[title={Scope of this report}]
+This report presents the engineering investigation and its results. The
+solver, its governing equations, numerical methods, software
+architecture and study workflows are documented separately in
+\emph{Theory and Implementation}, and are referred to here only where a
+result cannot be defended without them.
+\end{caveat}
+
+% =====================================================================
+\section{Methodology}
+
+\subsection{Modelling approach}
+
+Each cycle is a flowsheet of generic thermodynamic blocks --- turbine,
+compressors, heat exchangers, coolers, splitter, mixer --- connected by
+streams, and solved for the state at every point. Properties come from
+CoolProp's Helmholtz-energy equation of state for \ce{CO2}. Ideal-gas
+relations are not used anywhere: near the critical point $c_p$ varies by
+an order of magnitude over a few kelvin, and constant-$c_p$ relations
+are not approximately wrong there but qualitatively wrong.
+
+States are carried as $(P,h)$ rather than $(P,T)$. Every block's
+governing equation is an energy balance, which is an equation in
+enthalpy; and in the critical region $T$ and $P$ do not uniquely fix a
+state in a numerically comfortable way, while $P$ and $h$ do.
+
+\subsection{How a number gets into this report}
+
+No figure here was typed from a screen. Each one travels the same path:
+a case file fixes the inputs, the solver converges the flowsheet, the
+assessment layer turns the converged states into efficiency, mass and
+exergy, and a study script writes the result to \code{results/} together
+with a manifest recording the fingerprint of the source that produced
+it. A generator then turns those files into the \LaTeX{} tables this
+document includes. The chain is one-directional and every link is a
+file on disk, so any number can be traced back to the commit-state of
+the code that made it.
+
+\begin{figure}[htbp]
+\centering
+\input{\dgm{pipeline}}
+\caption{From a case to a printed number. The only hand-written step is
+the first box.}
+\label{r:fig:pipeline}
+\end{figure}
+
+\subsection{Specifying heat exchangers}
+
+An exchanger can be specified three ways --- effectiveness, minimum
+pinch, or conductance $UA$ --- and the three are not interchangeable as
+a basis for comparison.
+
+\textbf{All comparisons in this report use a common
+\SI{5}{\kelvin} minimum pinch}, not a common effectiveness. Specifying
+effectiveness asks each layout for the same \emph{fraction} of the
+thermodynamically available heat, which is a different physical demand
+in each; specifying the pinch asks each for the same \emph{quality} of
+heat exchange, and lets the required size differ. Since size is one of
+the four objectives, that is the only comparison that means anything.
+
+\subsection{Sizing and cost}
+
+The brief supplies one conversion from thermodynamics to hardware: a
+printed-circuit exchanger weighs about
+\SI{2.5}{\kilo\gram} per \si{\kilo\watt\per\kelvin} of $UA$. Everything
+in the mass column follows from it, which is why the conductance of
+every exchanger --- recuperators \emph{and} coolers --- is computed
+rather than assumed.
+
+\begin{caveat}[title={Two readings the brief does not settle}]
+\textbf{The precooler.} The \SI{2.5}{\kilo\gram\per\kilo\watt\per\kelvin}
+figure is given for the recuperator; the precooler is said only to
+``scale with heat rejected''. Both are printed-circuit exchangers in the
+same technology, so the same conversion is applied to both. This is
+consequential: the precooler is the \emph{larger} exchanger in every
+layout, so it carries more mass than the recuperator does.
+
+\textbf{Volume.} A baseline volume (\SI{120}{\cubic\metre}) and mass
+(\SI{60}{\tonne}) are given, but no volume-per-$UA$. Their ratio,
+\SI{0.5}{\tonne\per\cubic\metre}, is used as a density. Volume therefore
+carries no information that mass does not, and
+\si{\mega\watt_e\per\cubic\metre} is the \si{\mega\watt_e\per\tonne}
+figure rescaled. It is reported because the brief asks for it.
+\end{caveat}
+
+% =====================================================================
+\section{The configurations}
+\label{r:sec:configs}
+
+All five are built from the same blocks --- compressors, a turbine, heat
+exchangers, coolers, a splitter and a mixer. What distinguishes them is
+only how those blocks are wired, and each successive layout is an answer
+to a specific defect in the one before it.
+
+\begin{figure}[htbp]
+\centering
+\input{\dgm{simple}}
+\caption{\textbf{Simple Brayton.} Compress, heat, expand, reject. The
+turbine exhaust still leaves at roughly \SI{390}{\celsius} and all of
+that heat goes to the water, so the reactor must supply it again from
+cold. Included as a reference point, not a candidate.}
+\label{r:fig:simple}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\input{\dgm{recuperated}}
+\caption{\textbf{Recuperated.} One exchanger moves heat from the turbine
+exhaust to the compressor discharge, so the reactor starts from a
+warmer state. This is the baseline every other layout is measured
+against, and it recovers most of what the simple cycle wasted.}
+\label{r:fig:recuperated}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\input{\dgm{recompression}}
+\caption{\textbf{Recompression.} A fraction $x$ of the flow bypasses the
+precooler and is compressed warm, rejoining before the
+high-temperature recuperator. The low-temperature recuperator therefore
+carries full flow on its hot side and only $1-x$ on its cold side ---
+which is the whole point, and is explained in \S\ref{r:sec:why}.}
+\label{r:fig:recompression}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\input{\dgm{partialcooling}}
+\caption{\textbf{Partial cooling.} A third pressure level. The turbine
+exhausts below the main compressor inlet pressure and a pre-compressor
+brings it back up, so the expansion can be widened without giving up
+the dense main-compressor inlet. It is the pre-compressor inlet, at
+roughly \SI{6}{\mega\pascal}, that the brief's pressure constraint
+turns on.}
+\label{r:fig:partialcooling}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\input{\dgm{intercooled}}
+\caption{\textbf{Intercooled.} Compression split in two with cooling
+between the stages, so the second stage works on denser fluid. The
+intercooler is the only block here that rejects heat the recuperator
+could otherwise have used --- which, as \S\ref{r:sec:ic} shows, is what
+decides its fate.}
+\label{r:fig:intercooled}
+\end{figure}
+
+\section{Cycle configuration comparison}
+\label{r:sec:layouts}
+
+Four of the five were carried through the full comparison; the simple
+cycle is omitted because without recuperation it reaches only about
+\SI{23}{\percent} and is not a candidate for this duty.
+
+All four are solved at \SI{100}{\mega\watt} thermal, \SI{500}{\celsius}
+turbine inlet, water cooling, and --- importantly --- a common
+\SI{5}{\kelvin} recuperator pinch rather than a common effectiveness.
+That choice is what makes the comparison meaningful: it asks each layout
+for the same \emph{quality} of heat exchange and lets the required size
+differ, so the hardware each one needs is an output of the comparison
+rather than an assumption built into it.
+
+\begin{table}[htbp]
+\centering
+\input{\tbl{layout_comparison}}
+\caption{The four configurations at equal pinch. Conductances are in
+\si{\kilo\watt\per\kelvin}.}
+\label{r:tab:layouts}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\input{\tbl{total_conductance}}
+\caption{Total exchanger conductance --- recuperators \emph{and}
+coolers. The last column is the ratio to the recuperated baseline.}
+\label{r:tab:conductance}
+\end{table}
+
+\subsection{Recompression wins, and counting coolers changes by how much}
+
+Recompression gains \num{5.71} efficiency points over the recuperated
+baseline. The hardware cost of those points depends entirely on what is
+counted.
+
+Counting \emph{recuperators only}, recompression needs
+\SI{9936}{\kilo\watt\per\kelvin} against \SI{3967}{} --- a factor of
+\num{2.51}. Counting every exchanger, it needs
+\SI{17598}{\kilo\watt\per\kelvin} against \SI{12386}{} --- a factor of
+\num{1.42}.
+
+The difference is not an accounting convenience. Recompression makes
+the precooler \emph{smaller}, for two reasons: it rejects less heat per
+megawatt, because the recuperators recover more of it; and the
+precooler carries only the unsplit fraction of the flow, because the
+recompressed branch bypasses it entirely. Charging recompression for
+the recuperator it added while ignoring the cooler it saved overstates
+its cost by three-quarters. Every comparison in this report is
+therefore on total conductance.
+
+The same correction moves partial cooling from \num{1.35} to
+\num{1.07}.
+
+\subsection{Why recompression works}
+\label{r:sec:why}
+
+A recuperator fails when the two streams have different heat capacity
+rates $\dot m c_p$. The cold stream, at \SI{20}{\mega\pascal} and
+leaving the compressor near \SI{60}{\celsius}, sits close to the
+pseudo-critical line where $c_p$ is large; the hot stream at
+\SI{7.7}{\mega\pascal} does not. The cold side therefore needs far more
+heat per kelvin than the hot side can give up, the profiles converge in
+the middle rather than at an end, and the exchanger pinches internally
+where no amount of area helps.
+
+Splitting the flow fixes it directly. Sending a fraction $x$ around the
+precooler and compressing it separately reduces the mass flow on the
+cold side of the low-temperature recuperator, which reduces its
+capacity rate, which lets the profiles stay apart. The split is not an
+efficiency trick; it is a capacity-rate correction.
+
+\subsection{Intercooling loses, and the reason is not the pressure}
+\label{r:sec:ic}
+
+Intercooling has a free variable --- the intermediate pressure --- and
+it was swept rather than assumed.
+
+\begin{table}[htbp]
+\centering
+\input{\tbl{intercooling}}
+\caption{Intercooling against the plain recuperated cycle
+(\SI{36.541}{\percent}) at every intermediate pressure swept. The lower
+end approaches the compressor inlet, where the intercooler effectively
+switches off.}
+\label{r:tab:intercooling}
+\end{table}
+
+Three findings, in increasing order of interest.
+
+\textbf{The intercooler does what it is supposed to do.} Back-work ratio
+falls from \num{0.176} without it to \num{0.160} at its best point: the
+compressors really do take back less of the turbine's work.
+
+\textbf{The pressure that minimises compressor work is not the pressure
+that maximises efficiency.} Back-work ratio bottoms out at
+\SI{10}{\mega\pascal}, while efficiency is still improving at
+\SI{7.9}{}. Optimising the thing intercooling is \emph{for} would select
+the wrong pressure.
+
+\textbf{There is no interior optimum at all.} Efficiency rises
+monotonically as the intermediate pressure falls towards the compressor
+inlet --- that is, as the intercooler is progressively switched off. The
+best intercooler for this cycle is no intercooler.
+
+The reason is the second, unintended effect. Heat dumped in the
+intercooler leaves at a temperature the recuperator could have used, so
+the reactor must supply it again. In a gas turbine, with a back-work
+ratio near \num{0.5}, the compression saving dominates and intercooling
+is standard practice. In \ce{CO2} compression is already cheap, so there
+is little to save and the recuperator penalty wins.
+
+The classical geometric-mean rule
+($\sqrt{7.7 \times 20} = \SI{12.41}{\mega\pascal}$) is an ideal-gas
+result and sits \num{0.23} points below the best point swept --- a
+reminder that near the critical point the textbook rules are starting
+points, not answers.
+
+\subsection{Partial cooling: performance and feasibility are separate}
+
+Partial cooling adds a third pressure level, the turbine exhaust, which
+the brief does not constrain. It too was swept.
+
+\begin{table}[htbp]
+\centering
+\input{\tbl{partial_cooling}}
+\caption{Partial cooling's turbine exhaust pressure, split held at
+\num{0.30}. The last column marks whether the pre-compressor inlet
+satisfies the brief's \SI{7.7}{\mega\pascal} limit under its literal
+reading.}
+\label{r:tab:partialcooling}
+\end{table}
+
+\textbf{On performance:} \SI{6.0}{\mega\pascal} is an interior optimum
+within the range swept. Re-sweeping the split at that pressure gives
+\SI{41.9}{\percent} at $x = 0.40$, against recompression's
+\SI{44.9}{\percent} at the same split. Partial cooling does not
+overtake recompression at any point investigated.
+
+Two pressures do not solve, for a physical rather than a numerical
+reason: as the exhaust approaches the main compressor inlet, the
+pre-compressor has almost no work left to do, the second precooler's
+duty collapses, and its coolant temperature profile crosses.
+
+\textbf{On feasibility, which is a separate question:} none of the five
+solvable exhaust pressures places the pre-compressor inlet at or above
+\SI{7.7}{\mega\pascal}. Under the literal reading of the brief's
+constraint, the entire partial-cooling family is inadmissible whatever
+its efficiency, and the \SI{41.9}{\percent} figure above is therefore
+\emph{not} a feasible design under the stated requirement. This is
+discussed in \S\ref{r:sec:ambiguity}.
+
+% =====================================================================
+\section{Component assessment}
+
+\subsection{Turbine and compressors}
+
+At \SI{500}{\celsius} and \SI{20}{\mega\pascal} expanding to
+\SI{7.7}{\mega\pascal} at \num{0.90} isentropic efficiency, the turbine
+exit lands near \SI{391}{\celsius} --- which is what sets the
+hot-side recuperator inlet and therefore how much heat can be recovered
+at all.
+
+The compressors are where sCO\textsubscript{2} earns its reputation. The
+back-work ratio across the four layouts runs from \num{0.16} to
+\num{0.28}, against roughly \num{0.5} for a gas turbine and \num{0.01}
+for a steam plant. Compression near the critical point is cheap because
+the fluid is dense and $w = \int v\,\mathrm{d}P$ is small --- the
+compressibility factor at the inlet is about \num{0.22}.
+
+That cheapness is also why intercooling fails here: there is simply not
+much compression cost available to save.
+
+\subsection{Recuperators}
+
+The recuperator is the component the whole layout question is about. At
+a \SI{5}{\kelvin} pinch the recompression layout needs
+\SI{9936}{\kilo\watt\per\kelvin} split across two units, against
+\SI{3967}{} for the single recuperated unit --- and that extra
+conductance is the mass the efficiency is bought with.
+
+Its minimum temperature difference is not at either end. Because of the
+capacity-rate mismatch the profiles converge internally, so the pinch
+must be found by scanning the whole profile; checking the endpoints
+reports a comfortable margin where the real one may be zero.
+
+\subsection{Precooler and heat rejection}
+
+\begin{table}[htbp]
+\centering
+\input{\tbl{coolers}}
+\caption{Every cooler in every layout, sized against
+\SI{25}{\celsius} water with a \SI{10}{\kelvin} rise. Conductances in
+\si{\kilo\watt\per\kelvin}. A dash marks a quantity that does not exist
+for that row.}
+\label{r:tab:coolers}
+\end{table}
+
+The precooler is the largest exchanger in every layout, not the
+recuperator. It rejects more heat, against a much smaller temperature
+difference, and the combination is what drives its conductance. Any
+mass estimate that counts recuperators and omits coolers is wrong by
+more than a factor of two.
+
+\begin{table}[htbp]
+\centering
+\input{\tbl{water_sweep}}
+\caption{The baseline precooler as cooling-water flow is increased.}
+\label{r:tab:water}
+\end{table}
+
+Adding water shrinks the exchanger --- \SI{12450}{} to
+\SI{5933}{\kilo\watt\per\kelvin} --- until the pinch reaches
+\SI{7.00}{\kelvin} and stops. That floor is the \SI{32}{\celsius}
+\ce{CO2} outlet minus the \SI{25}{\celsius} water inlet, and no flow
+opens it further. Meanwhile $\eta_{th}$ does not move at all: only
+$\eta_{net}$ changes, and it \emph{falls}, because pump work is a cost
+with no efficiency benefit to trade against. Cooling water is a siting
+constraint and a hardware trade, not an efficiency lever.
+
+% =====================================================================
+\section{Second-law analysis}
+
+\begin{table}[htbp]
+\centering
+\input{\tbl{exergy_balance}}
+\caption{Exergy balance by layout, \si{\mega\watt}, against a
+\SI{25}{\celsius} dead state.}
+\label{r:tab:exergy}
+\end{table}
+
+For the recommended recompression design, the four largest
+irreversibilities are the high-temperature recuperator
+(\SI{6.09}{\mega\watt}, \SI{45.3}{\percent} of the accounted total), the
+turbine (\SI{2.90}{}, \SI{21.6}{\percent}), the precooler
+(\SI{1.82}{}, \SI{13.5}{\percent}) and the low-temperature recuperator
+(\SI{0.90}{}, \SI{6.7}{\percent}).
+
+\textbf{The recuperator dominates in every layout.} That is the
+capacity-rate mismatch of \S\ref{r:sec:layouts} seen a second way: heat
+crossing a finite temperature difference destroys availability, and the
+mismatch is precisely what forces that difference to stay open along
+most of the exchanger. The first-law and second-law analyses are not
+two findings; they are one finding in two currencies.
+
+\begin{caveat}[title={The totals are incomplete, and say so}]
+The heater's destruction cannot be computed: the model takes the
+reactor as given and has no heat-source boundary temperature, so the
+entropy generated transferring heat into the cycle is unknown. Every
+total above excludes it and is labelled incomplete rather than
+presented as a total.
+
+This is not a small omission. With a plausible \SI{650}{\celsius}
+source the heater would destroy about \SI{13.8}{\mega\watt} --- more
+than the recuperator --- and would be the largest irreversibility in the
+cycle. The layouts remain comparable because the same term is missing
+from each, but no absolute figure here is a complete accounting.
+\end{caveat}
+
+The overall second-law efficiency of the recommended design is
+\textbf{\num{0.684}}, against a Carnot efficiency between the assumed
+source and sink temperatures.
+
+% =====================================================================
+\section{Parametric studies and optimisation}
+
+\subsection{Pressure}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=11.5cm, height=5.4cm,
+  xlabel={Maximum cycle pressure [\si{\mega\pascal}]},
+  ylabel={$\eta_{th}$ [\si{\percent}]},
+  xmin=13.6, xmax=20.4, ymin=29, ymax=44,
+  legend pos=south east, legend style={font=\small,draw=black!30},
+  grid=both, grid style={black!8},
+  tick label style={font=\small}, label style={font=\small}]
+\addplot[accent, thick, mark=*, mark size=1.4pt]
+  table[x=P_high,y=eta_recup] {\dat{eta_vs_rp.dat}};
+\addlegendentry{recuperated}
+\addplot[warn, thick, mark=square*, mark size=1.4pt]
+  table[x=P_high,y=eta_recomp] {\dat{eta_vs_rp.dat}};
+\addlegendentry{recompression}
+\end{axis}
+\end{tikzpicture}
+\caption{Efficiency against maximum pressure at a fixed
+\SI{7.7}{\mega\pascal} inlet, so the axis is also pressure ratio
+(\numrange{1.82}{2.60}).}
+\label{r:fig:rp}
+\end{figure}
+
+Both curves rise all the way to the \SI{20}{\mega\pascal} limit and are
+still rising there. This is the opposite of the air-standard case,
+where a real cycle at fixed turbine inlet temperature has an interior
+optimum because past some ratio the compressor eats work faster than
+the turbine gains it. Here the back-work ratio is low enough that the
+crossover has not happened by \SI{20}{\mega\pascal}: \textbf{the
+optimum is the constraint, not a property of the cycle.} Raise the
+pressure limit and the answer moves.
+
+\subsection{Split fraction}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=11.5cm, height=5.4cm,
+  xlabel={Split fraction $x$ (fraction bypassing the precooler)},
+  ylabel={$\eta_{th}$ [\si{\percent}]},
+  xmin=0.07, xmax=0.48, ymin=36.5, ymax=45.5,
+  legend pos=north west, legend style={font=\small,draw=black!30},
+  grid=both, grid style={black!8},
+  tick label style={font=\small}, label style={font=\small}]
+\addplot[warn, thick, mark=square*, mark size=1.4pt]
+  table[x=x,y=eta_recomp] {\dat{eta_vs_x.dat}};
+\addlegendentry{recompression}
+\addplot[accent, thick, mark=*, mark size=1.4pt]
+  table[x=x,y=eta_partial] {\dat{eta_vs_x.dat}};
+\addlegendentry{partial cooling}
+\end{axis}
+\end{tikzpicture}
+\caption{Efficiency against split fraction at \SI{20}{\mega\pascal}.}
+\label{r:fig:x}
+\end{figure}
+
+Recompression has a genuine interior optimum near $x = 0.40$ and falls
+away beyond it. An interior optimum is the signature of two effects of
+opposite sign, and both can be named: sending more flow around the
+precooler relieves the capacity-rate mismatch, which is pure gain, until
+too little flow is left passing through the precooler to absorb the heat
+that must leave. Then the recuperator starts starving and the curve
+turns over.
+
+\subsection{Compressor inlet state}
+
+This is the least obvious result in the project.
+
+The brief's floor is \SI{32}{\celsius}, and that is where the fluid is
+densest at \SI{7.7}{\mega\pascal}, so compression should be cheapest
+there --- and it is, by a wide margin. Moving the inlet from \num{32} to
+\SI{35}{\celsius} makes compression roughly \SI{60}{\percent} more
+expensive per kilogram (\SIrange{20.5}{33.4}{\kilo\joule\per\kilogram}).
+
+And the efficiency goes \emph{up}: \SIrange{36.541}{37.355}{\percent}
+for the recuperated layout.
+
+The reason is the recuperator again. A warmer, less dense compressor
+inlet produces a warmer recuperator cold inlet, which eases the
+capacity-rate mismatch, which lets the recuperator recover more heat ---
+so the reactor has to supply appreciably less
+(\SIrange{262}{222}{\kilo\joule\per\kilogram}, about \SI{15}{\percent}).
+Compression got more expensive and the heat bill fell by more.
+
+It also buys margin: \SI{1.02}{\kelvin} above the critical temperature
+at the constraint becomes \SI{4.02}{\kelvin} at \SI{35}{\celsius}. A
+design better on efficiency \emph{and} better on safety margin, for
+some additional exchanger, is the rare case where two objectives stop
+competing --- and it would be missed entirely by anyone who assumed the
+optimum sits at the critical point because that is where the density is.
+
+\subsection{The feasible set and the Pareto front}
+
+\num{43} candidates were generated by sweeping maximum pressure,
+compressor inlet state, split fraction and layout. \num{36} are
+feasible under the brief's constraints; \num{7} are rejected. Of the
+feasible set, \num{5} are non-dominated.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=11.8cm, height=6.4cm,
+  xlabel={PCS mass [\si{\tonne}]}, ylabel={$\eta_{th}$ [\si{\percent}]},
+  xmin=64, xmax=108, ymin=31, ymax=44.5,
+  legend pos=south east, legend style={font=\small,draw=black!30},
+  grid=both, grid style={black!8},
+  tick label style={font=\small}, label style={font=\small}]
+\addplot[only marks, mark=x, mark size=2.6pt, black!25]
+  table[x=mass,y=eta] {\dat{pareto_dominated.dat}};
+\addlegendentry{dominated}
+\addplot[only marks, mark=o, mark size=2.4pt, warn!70]
+  table[x=mass,y=eta] {\dat{pareto_infeasible.dat}};
+\addlegendentry{infeasible}
+\addplot[only marks, mark=*, mark size=2.6pt, accent]
+  table[x=mass,y=eta] {\dat{pareto_front.dat}};
+\addlegendentry{frontier}
+\addplot[only marks, mark=star, mark size=4.5pt, chalk, thick]
+  table[x=mass,y=eta] {\dat{pareto_knee.dat}};
+\addlegendentry{selected}
+\end{axis}
+\end{tikzpicture}
+\caption{Efficiency against mass, all \num{43} candidates. Several
+infeasible designs sit \emph{above} the front --- the constraint filter
+working, not a plotting error. Some dominated crosses also sit above
+and left of a front point: dominance is judged on all four objectives,
+and those designs lose on cost or margin.}
+\label{r:fig:paretomass}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=11.8cm, height=5.8cm,
+  xlabel={$\eta_{th}$ [\si{\percent}]},
+  ylabel={Specific power [MW$_e$ per tonne]},
+  xmin=31, xmax=44.5, ymin=0.37, ymax=0.57,
+  legend pos=north east, legend style={font=\small,draw=black!30},
+  grid=both, grid style={black!8},
+  tick label style={font=\small}, label style={font=\small}]
+\addplot[only marks, mark=x, mark size=2.6pt, black!25]
+  table[x=eta,y=mwe_per_t] {\dat{pareto_dominated.dat}};
+\addlegendentry{dominated}
+\addplot[only marks, mark=o, mark size=2.4pt, warn!70]
+  table[x=eta,y=mwe_per_t] {\dat{pareto_infeasible.dat}};
+\addlegendentry{infeasible}
+\addplot[only marks, mark=*, mark size=2.6pt, accent]
+  table[x=eta,y=mwe_per_t] {\dat{pareto_front.dat}};
+\addlegendentry{frontier}
+\addplot[only marks, mark=star, mark size=4.5pt, chalk, thick]
+  table[x=eta,y=mwe_per_t] {\dat{pareto_knee.dat}};
+\addlegendentry{selected}
+\end{axis}
+\end{tikzpicture}
+\caption{The same designs as specific power against efficiency. The
+frontier slopes \emph{down}.}
+\label{r:fig:paretopower}
+\end{figure}
+
+The two Pareto plots must be read together. In
+Figure~\ref{r:fig:paretomass} the frontier slopes up: every efficiency
+point costs tonnes. In Figure~\ref{r:fig:paretopower} the same frontier
+slopes down, because specific power is the ratio of two objectives and
+exchanger mass grows faster than efficiency --- so it is maximised by
+the \emph{least} efficient design on the front. A reader shown only the
+second would conclude the simplest layout is best. Specific power is
+reported, as the brief asks, and is not used as an objective.
+
+\begin{table}[htbp]
+\centering
+\input{\tbl{pareto_front}}
+\caption{The non-dominated designs.}
+\label{r:tab:front}
+\end{table}
+
+\textbf{Seven rejected designs.} One fails on a recuperator pinch of
+\SI{4.98}{\kelvin} against the \SI{5.00}{} limit --- not a bad design,
+a design whose exchanger is fractionally too small. The other six are
+the partial-cooling family, rejected on inlet pressure
+(\S\ref{r:sec:ambiguity}). Notably the highest-efficiency design found
+anywhere in the sweep is among the rejected.
+
+% =====================================================================
+\section{Recommended design}
+\label{r:sec:recommendation}
+
+\begin{table}[htbp]
+\centering
+\input{\tbl{performance}}
+\caption{Recompression, \SI{20}{\mega\pascal}, $x = 0.25$,
+\SI{35}{\celsius} compressor inlet. Generated from
+\code{results/selected\_design/}.}
+\label{r:tab:selected}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=12cm, height=8cm,
+  xlabel={Specific entropy [\si{\kilo\joule\per\kilogram\per\kelvin}]},
+  ylabel={Temperature [\si{\celsius}]},
+  xmin=1.54, xmax=2.80, ymin=0, ymax=560,
+  legend pos=south east, legend style={font=\small,draw=black!30},
+  grid=both, grid style={black!8},
+  nodes near coords, point meta=explicit symbolic,
+  every node near coord/.append style={font=\scriptsize, anchor=south east,
+                                       inner sep=1.5pt, black!75},
+  tick label style={font=\small}, label style={font=\small}]
+\addplot[accent, thick, mark=*, mark size=1.5pt]
+  table[x=s,y=T,meta=name] {\dat{ts_path.dat}};
+\addlegendentry{main loop}
+\addplot[warn, thick, dashed, mark=square*, mark size=1.5pt]
+  table[x=s,y=T,meta=name] {\dat{ts_branch.dat}};
+\addlegendentry{recompression branch}
+\end{axis}
+\end{tikzpicture}
+\caption{$T$--$s$ diagram of the recommended cycle. $1\to2$ main
+compressor; $2\to3\to4\to5$ the two recuperators and the mixing point;
+$5\to6$ reactor; $6\to7$ turbine; $7\to8\to9$ the recuperators giving
+the heat back; $9\to1$ precooler. The dashed branch is the quarter of
+the flow that skips the precooler, compressed from state~9 to~10 and
+rejoining at~4.}
+\label{r:fig:ts}
+\end{figure}
+
+Two features of the diagram carry the whole argument. \textbf{The loop
+is thin}: the two recuperator legs run close together over most of
+their length, and that narrow gap is the pinch, the capacity-rate
+mismatch and the largest irreversibility in the cycle, all being the
+same thing seen in temperature--entropy coordinates. \textbf{The
+precooler leg is short}: almost all the heat leaving the hot stream is
+handed to the cold stream rather than to the water, which is the
+recuperator earning its tonnes.
+
+\subsection{What was sacrificed, and to what}
+
+The brief asks what the selection gives up relative to each role's
+individually optimal design. It gives up something to all of them.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{3.4cm}p{4.4cm}p{6.2cm}@{}}
+\toprule
+Role's optimum & Would have chosen & What the selection sacrifices \\
+\midrule
+R1 turbine & highest pressure ratio & nothing --- both agree on
+\SI{20}{\mega\pascal}, the constraint \\[2pt]
+R2 compressors & inlet at \SI{32}{\celsius}, where compression is
+cheapest & \SI{60}{\percent} more compression work per
+\si{\kilo\gram}, bought back on the heat bill \\[2pt]
+R3 recuperators & largest affordable $UA$ & \num{1.4} efficiency
+points against the $x = 0.35$ design, for \SI{17}{\tonne} \\[2pt]
+R4 precooler & most cooling water & pump work and exchanger size
+traded; water flow is sized to a \SI{10}{\kelvin} rise \\[2pt]
+R5 compactness & the recuperated cycle, best
+\si{\mega\watt_e\per\tonne} on the front &
+\SI{18.5}{\tonne} and \num{0.070}
+\si{\mega\watt_e\per\tonne}, for \num{4.06} efficiency points \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Why this point and not another on the front}
+
+The selection rule is a knee point: normalise each objective across the
+front, construct the ideal corner where all four take their best value
+at once, and take the design closest to it.
+
+\textbf{This weights all four objectives equally, which nobody asked
+for.} It is not neutral merely because no weights were typed. It is a
+defensible starting point for an argument, and the argument is this:
+
+\begin{itemize}\itemsep3pt
+\item It is \emph{not} the most efficient design on the front. Two
+      recompression designs beat it by up to \num{1.4} points, and both
+      are heavier --- the knee gives up those points for roughly
+      \SI{17}{\tonne}.
+\item It is \emph{not} the most compact. The recuperated cycle at
+      \SI{68.5}{\tonne} is lighter and has the best specific power on
+      the front. It is also four efficiency points worse, and the
+      hardware that closes that gap pays for itself in a little over
+      two years against a plant meant to run for thirty.
+\item \textbf{The payback argument is what decides it.} At the brief's
+      coefficients, \num{4.06} extra efficiency points are worth
+      \SI{1.99}{\text{US\$M}} a year against
+      \SI{4.6}{\text{US\$M}} of extra hardware. That conclusion
+      survives being wrong about the price of steel by a factor of two,
+      which is the only reason it is worth stating.
+\end{itemize}
+
+Weight efficiency more heavily and the selection moves up the front to
+the \SI{18}{\mega\pascal}, $x = 0.35$ design; weight mass more heavily
+and it moves down to the recuperated cycle. \textbf{The front is the
+finding. The point on it is a recommendation.}
+
+% =====================================================================
+\section{Validation, assumptions and limitations}
+
+\subsection{What the model was checked against}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{3.0cm}p{2.0cm}p{8.6cm}@{}}
+\toprule
+What & Status & Evidence \\
+\midrule
+Solver numerics & Validated & Air-standard Brayton against the closed
+form, $4.6\times10^{-16}$ \\[2pt]
+\ce{CO2} properties & Validated & Dostal's table to
+\SI{0.002}{\percent}; three entropy disagreements traced to errors in
+his table \\[2pt]
+Whole cycle & Validated & Kim (2018): \SI{44.669}{\percent} against his
+\SI{44.670}{}, \emph{and} his optimum found independently in two
+directions \\[2pt]
+Energy closure & Verified & First law closes to $2\times10^{-14}$ \\[2pt]
+Exergy & Tested & 16 internal checks; no external reference available \\[2pt]
+Numerical settings & Verified & Largest deviation
+$9.6\times10^{-6}$ points across every tolerance swept \\[2pt]
+Mass, cost, MOO & \textbf{Unvalidated} & The brief's illustrative
+coefficients, applied consistently. Nothing external exists to check
+them against \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Reproducing a published efficiency is weaker evidence than it looks ---
+with enough free parameters any model can hit one number. What makes
+the Kim comparison worth something is that the solver finds his
+\emph{optimum}, in split fraction and pressure ratio independently,
+without being told where it is. An optimum is a property of the whole
+response surface, so matching it means the model's derivatives are
+right and not just its value.
+
+\textbf{The recommendation rests partly on the unvalidated row.}
+Efficiency and margin are validated quantities; mass, cost, payback and
+the selection itself inherit the status of the brief's coefficients.
+Nothing in this report should be read as claiming otherwise.
+
+\subsection{Numerical convergence}
+
+Every tolerance and discretisation setting was swept across a decade or
+more. The largest efficiency deviation was
+$9.6\times10^{-6}$ percentage points against a $10^{-3}$ threshold for
+the fourth significant figure, so quoting \SI{41.41}{\percent} is
+supported.
+
+Two findings are worth recording. A loose tear tolerance
+($10^{-6}$) is rejected by the \emph{exergy} balance, residual
+$5.3\times10^{-6}$, rather than by the first-law closure --- the
+second-law check is the more sensitive convergence detector of the two.
+And efficiency and conductance do not converge at the same rate:
+exchanger resolution moves $UA$ by \SI{0.041}{\percent} while leaving
+efficiency unchanged to $10^{-8}$.
+
+\textbf{That second finding matters because mass is an objective}, so
+it was propagated rather than noted. Across \numrange{25}{400} nodes
+the recommended design's mass varies by \SI{0.0124}{\tonne}, against a
+smallest gap between adjacent front designs of \SI{4.91}{\tonne} --- a
+factor of \num{396}. The entire optimisation was then re-run at both
+resolution extremes: \num{43} candidates, \num{36} feasible, and
+\textbf{the same design selected at \num{25}, \num{100} and \num{400}
+nodes}. Resolution does not touch the recommendation.
+
+\subsection{The constraint that admits two readings}
+\label{r:sec:ambiguity}
+
+The brief states: \emph{compressor inlet $\ge$ \SI{32}{\celsius} and
+$\ge$ \SI{7.7}{\mega\pascal} (safe distance from the two-phase
+region)}. Two readings are available.
+
+\textbf{Literal:} every compressor inlet meets both numbers.
+\textbf{By intent:} every compressor inlet is a safe distance from the
+two-phase region --- which, above the critical temperature, it is at any
+pressure, because there is no saturation line up there to be near.
+
+Partial cooling is exactly the case that separates them. Its
+pre-compressor sits at about \SI{6}{\mega\pascal} and
+\SI{32}{\celsius}: below the stated pressure, above the critical
+temperature, and therefore nowhere near a phase boundary.
+
+\textbf{This report adopts the literal reading}, because a number in a
+requirement is a number, and it is the reading under which the
+recommendation above holds. The consequence is explicit: the entire
+partial-cooling family is excluded on a pressure limit rather than on
+performance. Under the alternative reading, six further designs re-enter
+the comparison and the recommendation would have to be re-examined.
+This should be settled with the course staff rather than decided here.
+
+\subsection{What is not modelled}
+
+\textbf{Would change the ranking:} off-design and part-load behaviour
+--- every efficiency here is a design-point number; turbomachinery mass
+scaling with flow, held constant across layouts; the heat-source
+boundary temperature, whose absence makes every exergy total partial.
+
+\textbf{Would change the numbers, not the ranking:} pressure drops are
+stated rather than derived from geometry; component efficiencies are
+constant rather than functions of operating point; the cost proxy
+contains no fuel, O\&M, financing or civil works.
+
+\textbf{Open:} partial cooling was swept in one dimension at a time
+rather than jointly over exhaust pressure and split fraction.
+
+% =====================================================================
+\section{Conclusions}
+
+\begin{enumerate}\itemsep4pt
+\item \textbf{Recompression at \SI{20}{\mega\pascal}, $x = 0.25$, with a
+      \SI{35}{\celsius} compressor inlet} is recommended:
+      \SI{41.41}{\percent} thermal efficiency, second-law efficiency
+      \num{0.684}, \SI{87.0}{\tonne},
+      \SI{0.476}{\mega\watt_e\per\tonne}, \SI{4.02}{\kelvin} of margin,
+      \num{2.3}-year payback against the best feasible recuperated
+      design.
+\item \textbf{Compare layouts on total conductance, not recuperators.}
+      Recompression makes the precooler smaller; counting recuperators
+      alone overstates its hardware cost by three-quarters
+      (\num{2.51}$\times$ against \num{1.42}$\times$).
+\item \textbf{The compressor-inlet optimum is not at the critical
+      point.} Warmer costs \SI{60}{\percent} more to compress and saves
+      more on heat, and buys margin as well --- the one place in this
+      study where two objectives stop competing.
+\item \textbf{Intercooling does not pay in sCO\textsubscript{2}.} It
+      reduces compressor work as intended and still loses, at every
+      intermediate pressure, because the heat it dumps is heat the
+      recuperator would have recovered.
+\item \textbf{Partial cooling is competitive on performance and
+      inadmissible as specified.} Those are separate conclusions and
+      the second rests on a reading of the brief, not on physics.
+\item \textbf{The pressure optimum is the constraint.} Both layouts are
+      still improving at \SI{20}{\mega\pascal}; raising the limit moves
+      the answer.
+\item \textbf{The front is the finding, the point on it is a choice.}
+      Equal weighting is a judgement, and shifting it moves the
+      selection in a way anyone can inspect.
+\end{enumerate}
+
+% =====================================================================
+\appendix
+\section{Reference results}
+\label{r:app:results}
+
+Every table in this appendix is generated from the saved study outputs
+by \code{python -m tools.make\_tables} and regenerates whenever the
+report is rebuilt. None is maintained by hand.
+
+\subsection{State points of the recommended cycle}
+
+\begin{table}[htbp]
+\centering
+\input{\tbl{state_points}}
+\caption{From \code{results/selected\_design/state\_points.csv}.}
+\end{table}
+
+\subsection{Numerical sensitivity}
+
+\begin{table}[htbp]
+\centering
+\input{\tbl{tolerances}}
+\caption{From \code{results/tolerance\_sensitivity/sweep.csv}. Rows
+that did not solve are omitted; the tear tolerance of $10^{-6}$ is one
+of them.}
+\end{table}
+
+\subsection{Provenance}
+\label{r:sec:prov}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{3.6cm}p{5.4cm}p{5.0cm}@{}}
+\toprule
+Result & Study & Saved to \\
+\midrule
+Tables \ref{r:tab:layouts}, \ref{r:tab:conductance} &
+\code{compare\_layouts} & \code{results/layout\_comparison/} \\
+Figures \ref{r:fig:rp}, \ref{r:fig:x} & \code{sweeps} &
+\code{results/parameter\_sweeps/} \\
+Table \ref{r:tab:partialcooling} & \code{partial\_cooling} &
+\code{results/partial\_cooling/} \\
+Table \ref{r:tab:intercooling} & \code{intercooling} &
+\code{results/intercooling/} \\
+Tables \ref{r:tab:coolers}, \ref{r:tab:water} & \code{cooling} &
+\code{results/cooling/} \\
+Table \ref{r:tab:exergy} & \code{exergy} & \code{results/exergy/} \\
+Figures \ref{r:fig:paretomass}, \ref{r:fig:paretopower},
+Table \ref{r:tab:front} & \code{tradeoff} &
+\code{results/multi\_objective/} \\
+Table \ref{r:tab:selected}, Figure \ref{r:fig:ts} &
+\code{selected\_design} & \code{results/selected\_design/} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Each directory carries a \code{manifest.json} recording the command,
+the grids swept, the environment and a SHA-256 fingerprint of the
+source that produced it.
+

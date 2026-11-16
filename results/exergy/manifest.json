@@ -1,0 +1,56 @@
+{
+  "study": "exergy",
+  "purpose": "Second-law accounting: where the available work is destroyed, by component and by layout.",
+  "script": "project/studies/exergy.py",
+  "command": "python -m project.studies.exergy",
+  "written_utc": "2026-11-07T03:18:59Z",
+  "source_fingerprint": {
+    "sha256": "65f1e4b8ee4f7fb1",
+    "files": 73
+  },
+  "environment": {
+    "python": "3.13.18",
+    "platform": "Linux-6.18.44-fc-v300-x86_64-with-glibc2.39",
+    "coolprop": "8.0.0"
+  },
+  "inputs": {
+    "recuperator_pinch_k": 5.0,
+    "T0_k": 298.15,
+    "P0_pa": 101325
+  },
+  "outputs": [
+    {
+      "file": "by_component.csv",
+      "rows": 32,
+      "columns": [
+        "layout",
+        "block",
+        "kind",
+        "exergy_destroyed_mw",
+        "fraction_pct",
+        "specific_kj_kg",
+        "reason_unavailable"
+      ]
+    },
+    {
+      "file": "balance.csv",
+      "rows": 4,
+      "columns": [
+        "layout",
+        "eta_th_pct",
+        "supplied_mw",
+        "to_work_mw",
+        "destroyed_known_mw",
+        "shed_mw",
+        "residual",
+        "complete",
+        "incomplete_reason"
+      ]
+    }
+  ],
+  "notes": [
+    "The heater's destruction is not computable: the model has no heat-source boundary temperature. Those rows carry an empty value and a reason, never a zero.",
+    "Every total that excludes the heater is labelled incomplete rather than presented as a total.",
+    "Supply T_source to the heater and the number becomes computable; at 650 degC the heater would be the largest irreversibility in the cycle."
+  ]
+}

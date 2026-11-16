@@ -1,0 +1,64 @@
+{
+  "study": "parameter_sweeps",
+  "purpose": "R3/R4: efficiency against maximum pressure and against recompression split fraction.",
+  "script": "project/studies/sweeps.py",
+  "command": "python -m project.studies.sweeps",
+  "written_utc": "2026-11-07T03:16:10Z",
+  "source_fingerprint": {
+    "sha256": "65f1e4b8ee4f7fb1",
+    "files": 73
+  },
+  "environment": {
+    "python": "3.13.18",
+    "platform": "Linux-6.18.44-fc-v300-x86_64-with-glibc2.39",
+    "coolprop": "8.0.0"
+  },
+  "inputs": {
+    "P_high_mpa": [
+      14.0,
+      15.0,
+      16.0,
+      17.0,
+      18.0,
+      19.0,
+      20.0
+    ],
+    "P_inlet_mpa": 7.7,
+    "splits": [
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3,
+      0.35,
+      0.4,
+      0.45
+    ],
+    "recuperator_pinch_k": 5.0
+  },
+  "outputs": [
+    {
+      "file": "pressure_sweep.csv",
+      "rows": 7,
+      "columns": [
+        "P_high_mpa",
+        "pressure_ratio",
+        "eta_recuperated_pct",
+        "eta_recompression_pct"
+      ]
+    },
+    {
+      "file": "split_fraction_sweep.csv",
+      "rows": 8,
+      "columns": [
+        "split",
+        "eta_recompression_pct",
+        "eta_partial_cooling_pct"
+      ]
+    }
+  ],
+  "notes": [
+    "Grids are finer than the trade-off study's on purpose: a sweep shows the shape of a curve, a trade-off evaluates candidate designs.",
+    "An empty efficiency means that point did not solve; it is recorded rather than dropped."
+  ]
+}

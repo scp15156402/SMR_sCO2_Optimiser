@@ -1,0 +1,55 @@
+{
+  "study": "cooling",
+  "purpose": "Size every cooler in every layout against 25 degC water, and sweep the baseline precooler's water flow.",
+  "script": "project/studies/cooling.py",
+  "command": "python -m project.studies.cooling",
+  "written_utc": "2026-11-07T03:17:36Z",
+  "source_fingerprint": {
+    "sha256": "65f1e4b8ee4f7fb1",
+    "files": 73
+  },
+  "environment": {
+    "python": "3.13.18",
+    "platform": "Linux-6.18.44-fc-v300-x86_64-with-glibc2.39",
+    "coolprop": "8.0.0"
+  },
+  "inputs": {
+    "water_inlet_degc": 25.0,
+    "water_rise_k": 10.0,
+    "recuperator_pinch_k": 5.0
+  },
+  "outputs": [
+    {
+      "file": "per_cooler.csv",
+      "rows": 6,
+      "columns": [
+        "layout",
+        "cooler",
+        "duty_mw",
+        "water_kg_s",
+        "coolant_pinch_k",
+        "coolant_ua_kw_k",
+        "pump_kw"
+      ]
+    },
+    {
+      "file": "water_sweep.csv",
+      "rows": 6,
+      "columns": [
+        "water_kg_s",
+        "water_T_out_degc",
+        "coolant_pinch_k",
+        "pinch_at_x",
+        "coolant_ua_kw_k",
+        "pump_kw",
+        "eta_th_pct",
+        "eta_net_of_pump_pct"
+      ]
+    }
+  ],
+  "notes": [
+    "The precooler pinch sticks at 7.00 K once water is plentiful: that is the 32 degC CO2 outlet minus the 25 degC water inlet, and no flow can open it further.",
+    "eta_th does not move across the water sweep; only eta_net_of_pump does, and it falls, because pump work is a cost with no efficiency benefit to trade against.",
+    "Pressure drops are stated, never derived: this project computes UA and not geometry."
+  ]
+}

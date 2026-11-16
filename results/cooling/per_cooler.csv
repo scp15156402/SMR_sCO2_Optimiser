@@ -1,0 +1,7 @@
+layout,cooler,duty_mw,water_kg_s,coolant_pinch_k,coolant_ua_kw_k,pump_kw
+recuperated,COOLER,63.4588,1518.655,4.8963,8418.98,0.0
+recompression,PC,57.752,1382.083,4.8963,7661.87,60.574
+partial cooling,PC1,21.7879,521.415,7.0,1484.06,5.313
+partial cooling,PC2,37.9372,907.888,4.1171,6425.41,28.046
+intercooled,IC,11.8714,284.099,4.5208,1997.14,0.941
+intercooled,PC,51.8845,1241.666,4.1274,8761.35,78.598

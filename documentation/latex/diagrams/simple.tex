@@ -1,0 +1,11 @@
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \node[coldblk, minimum width=20mm] (comp)  at (0,2.2)  {Compressor};
+  \node[coldblk, minimum width=20mm] (cool)  at (0,0)    {Cooler};
+  \node[hotblk,  minimum width=18mm] (heat)  at (5.2,2.2) {Heater};
+  \node[hotblk,  minimum width=18mm] (turb)  at (5.2,0)   {Turbine};
+
+  \draw[ar] (cool) -- node[lbl,left]{1} (comp);
+  \draw[ar] (comp) -- node[lbl,above]{2} (heat);
+  \draw[ar] (heat) -- node[lbl,right]{3} (turb);
+  \draw[ar] (turb) -- node[lbl,below]{4} (cool);
+\end{tikzpicture}
