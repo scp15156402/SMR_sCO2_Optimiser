@@ -22,7 +22,8 @@ python -m pytest                  # tests
 
 ## Branches and tags
 
-- **`old-project` (branch and tag)** holds the previous version of this project, as it was before the rebuild.
+- **`main`** contains the completed refinement: the sweep was refined around the winners until it converged after round 4 (see `out/convergence.md`). Layout 1 is left out of the ranking; a second, strict ranking (`data/results_econ_strict.csv`) applies 7.7 MPa to every compressor inlet.
 - **tag `rebuild`** is the submitted state: <https://github.com/scp15156402/SMR_sCO2_Optimiser/tree/rebuild>.
-- **`main`** is that submitted state, plus later maintenance.
-- **branch `wager`** holds unfinished sweep-refinement work (`core/refine.py`, `out/convergence.md`). It has not been merged into `main`.
+- **tag `extended-v1`** is the refined study: the merge of `wager` into `main`.
+- **branch `wager`** (last commit tagged `wager-final`) is where the refinement was run; kept for its history.
+- **`old-project` (branch and tag)** is unchanged: the previous version of this project, as it was before the rebuild.
