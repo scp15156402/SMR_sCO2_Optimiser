@@ -47,3 +47,10 @@ GRIDS.update({
     'W2_L6a': dict(layout=6, T_turb=[500], P_high=[200], T_in=[320], P_mid=[77], P_exh=[53, 55, 57], split=[43, 45, 47]),
     'W2_L6b': dict(layout=6, T_turb=[500], P_high=[200], T_in=[335, 340, 345], P_mid=[79, 81, 83], P_exh=[30, 35, 40], split=[33, 35, 37]),
 })
+
+# refinement round 3 (core/refine.py)
+GRIDS.update({
+    'W3_L5d': dict(layout=5, T_turb=[500], P_high=[200], P_low=[77], T_in=[320], P_mid=[78, 79, 80], split=[36]),
+    'W3_L6e': dict(layout=6, T_turb=[500], P_high=[200], T_in=[320], P_mid=[77], P_exh=[52, 53, 54], split=[44, 45, 46]),
+    'W3_L6f': dict(layout=6, T_turb=[500], P_high=[200], T_in=[335], P_mid=[78, 79, 80], P_exh=[33, 35, 37], split=[36, 37, 38]),
+})
