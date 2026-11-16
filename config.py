@@ -30,6 +30,10 @@ COOLER_KG_PER_KW_K  = 2.5     # same PCHE rule applied to coolers
 EXTRA_COMPRESSORS   = {1: 0, 2: 0, 3: 1, 4: 1, 5: 2, 6: 2}   # by layout number
 DENSITY_T_PER_M3    = BASELINE_MASS_T / BASELINE_VOLUME_M3   # volume = mass / this
 STRICT_INLET_PRESSURE = False # 7.7 MPa limit applied to the main compressor only; under the literal reading layout 6 is excluded
+# (economics also writes a second, "strict" ranking with every design whose lowest
+#  compressor inlet is below P_INLET_MIN_MPA removed: data/results_econ_strict.csv)
+RANK_EXCLUDE_LAYOUTS = [1]    # kept in the results, left out of Pareto / knee / TOPSIS (report ranks 2-6)
+P_EXH_MIN_MPA       = 2.0     # refinement bound on layout 6 turbine exhaust pressure
 
 LIFETIME_YEARS      = 10      # N in the lifetime payout
 N_TOP               = 5       # size of each top-N list

@@ -35,7 +35,8 @@ def tag_rows(rows, n=None):
     for r in rows:
         if r["knee"] == "1":
             add(r["ID"], "knee")
-    for k, r in enumerate(sorted(rows, key=lambda r: int(r["topsis_rank"]))[:n], 1):
+    ranked = [r for r in rows if r["topsis_rank"] != ""]   # excluded layouts are unranked
+    for k, r in enumerate(sorted(ranked, key=lambda r: int(r["topsis_rank"]))[:n], 1):
         add(r["ID"], f"topsis_{k}")
     for k, r in enumerate(sorted(rows, key=lambda r: -f(r, "eta"))[:n], 1):
         add(r["ID"], f"eta_{k}")
