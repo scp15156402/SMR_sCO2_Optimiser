@@ -39,3 +39,11 @@ GRIDS.update({
     'W1_L2': dict(layout=2, P_high=[200], P_low=(77, 82, 1), T_in=(320, 360, 5), T_turb=[500]),
     'W1_L4': dict(layout=4, P_high=[200], P_low=(77, 85, 4), T_in=(320, 340, 10), P_mid=(100, 160, 20), T_turb=[500]),
 })
+
+# refinement round 2 (core/refine.py)
+GRIDS.update({
+    'W2_L5a': dict(layout=5, T_turb=[500], P_high=[200], P_low=[77], T_in=[320], P_mid=[80, 90], split=[35, 36, 37]),
+    'W2_L5b': dict(layout=5, T_turb=[500], P_high=[200], P_low=[77], T_in=[325, 330, 335], P_mid=[80, 90], split=[42, 44, 46]),
+    'W2_L6a': dict(layout=6, T_turb=[500], P_high=[200], T_in=[320], P_mid=[77], P_exh=[53, 55, 57], split=[43, 45, 47]),
+    'W2_L6b': dict(layout=6, T_turb=[500], P_high=[200], T_in=[335, 340, 345], P_mid=[79, 81, 83], P_exh=[30, 35, 40], split=[33, 35, 37]),
+})

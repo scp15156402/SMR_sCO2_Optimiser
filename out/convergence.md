@@ -8,6 +8,7 @@ Stop when, against the previous round: best payout per layout moves < 0.05 %; TO
 |---|---|---|---|---|---|---|---|---|---|---|
 | 0 | 0 | 969 | L3_Ph200_Pl077_T330_Tt500_x040 (178.94 M$, 71.52 t) | L3_Ph200_Pl077_T330_Tt500_x040 (178.94 M$, 71.52 t) | L2_Ph200_Pl077_T340_Tt500 | L3_Ph200_Pl077_T330_Tt500_x040 | no | no | no | 0.0 |
 | 1 | 1455 | 2413 | L6_Ph200_T340_Tt500_Pm081_Pe040_x035 (171.16 M$, 69.05 t) | L6_Ph200_T340_Tt500_Pm081_Pe040_x040 (174.37 M$, 70.02 t) | L2_Ph200_Pl077_T335_Tt500 | L6_Ph200_T340_Tt500_Pm081_Pe040_x040 | no | no | no | 80.8 |
+| 2 | 102 | 2515 | L6_Ph200_T335_Tt500_Pm079_Pe035_x035 (169.05 M$, 68.04 t) | L6_Ph200_T335_Tt500_Pm079_Pe035_x037 (170.22 M$, 68.40 t) | L2_Ph200_Pl077_T335_Tt500 | L6_Ph200_T335_Tt500_Pm079_Pe035_x037 | no | no | no | 92.9 |
 
 ## Best payout design per layout
 
@@ -25,6 +26,12 @@ Stop when, against the previous round: best payout per layout moves < 0.05 %; TO
 | 1 | 4 | L4_Ph200_Pl081_T320_Tt500_Pm160 | 0.35938 | 83.80 | 155.149 |
 | 1 | 5 | L5_Ph200_Pl077_T320_Tt500_Pm090_x036 | 0.42402 | 83.46 | 186.904 |
 | 1 | 6 | L6_Ph200_T320_Tt500_Pm077_Pe055_x045 | 0.41591 | 77.33 | 184.463 |
+| 2 | 1 | L1_Ph200_Pl077_T320_Tt500 | 0.14820 | 48.69 | 60.447 |
+| 2 | 2 | L2_Ph200_Pl077_T335_Tt500 | 0.33292 | 59.64 | 148.217 |
+| 2 | 3 | L3_Ph200_Pl077_T320_Tt500_x036 | 0.42302 | 78.24 | 187.721 |
+| 2 | 4 | L4_Ph200_Pl081_T320_Tt500_Pm160 | 0.35938 | 83.80 | 155.149 |
+| 2 | 5 | L5_Ph200_Pl077_T320_Tt500_Pm080_x036 | 0.42416 | 81.41 | 187.485 |
+| 2 | 6 | L6_Ph200_T320_Tt500_Pm077_Pe053_x045 | 0.41591 | 76.86 | 184.581 |
 
 ## Winners on a non-constraint grid edge (after each round)
 
@@ -44,7 +51,14 @@ Stop when, against the previous round: best payout per layout moves < 0.05 %; TO
 | 1 | L5_Ph200_Pl077_T320_Tt500_Pm090_x036 | Pm- |
 | 1 | L6_Ph200_T340_Tt500_Pm081_Pe040_x035 | Pe- |
 | 1 | L6_Ph200_T320_Tt500_Pm077_Pe055_x045 | - |
+| 2 | L2_Ph200_Pl077_T335_Tt500 | - |
+| 2 | L3_Ph200_Pl077_T330_Tt500_x044 | - |
+| 2 | L3_Ph200_Pl077_T320_Tt500_x036 | - |
+| 2 | L5_Ph200_Pl077_T325_Tt500_Pm080_x046 | x+ |
+| 2 | L5_Ph200_Pl077_T320_Tt500_Pm080_x036 | - |
+| 2 | L6_Ph200_T335_Tt500_Pm079_Pe035_x035 | - |
+| 2 | L6_Ph200_T320_Tt500_Pm077_Pe053_x045 | - |
 
 ## Verdict
 
-(continuing)
+NOT converged: the 90-minute limit was reached during round 2. Unmet: payout, topsis, edges.

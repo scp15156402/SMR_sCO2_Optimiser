@@ -222,5 +222,111 @@
   },
   "minutes": 80.80358162720998,
   "verdict": "(continuing)"
+ },
+ {
+  "round": 2,
+  "added": 102,
+  "snap": {
+   "feasible": 2515,
+   "attempted": 2610,
+   "best": {
+    "1": {
+     "ID": "L1_Ph200_Pl077_T320_Tt500",
+     "eta": 0.14820082,
+     "mass": 48.685948,
+     "payout": 60446915.0
+    },
+    "2": {
+     "ID": "L2_Ph200_Pl077_T335_Tt500",
+     "eta": 0.33291541,
+     "mass": 59.644453,
+     "payout": 148217440.0
+    },
+    "3": {
+     "ID": "L3_Ph200_Pl077_T320_Tt500_x036",
+     "eta": 0.42302464,
+     "mass": 78.244393,
+     "payout": 187720980.0
+    },
+    "4": {
+     "ID": "L4_Ph200_Pl081_T320_Tt500_Pm160",
+     "eta": 0.35938419,
+     "mass": 83.796017,
+     "payout": 155149250.0
+    },
+    "5": {
+     "ID": "L5_Ph200_Pl077_T320_Tt500_Pm080_x036",
+     "eta": 0.42415584,
+     "mass": 81.407045,
+     "payout": 187484600.0
+    },
+    "6": {
+     "ID": "L6_Ph200_T320_Tt500_Pm077_Pe053_x045",
+     "eta": 0.41590941,
+     "mass": 76.859638,
+     "payout": 184580700.0
+    }
+   },
+   "topsis": {
+    "ID": "L6_Ph200_T335_Tt500_Pm079_Pe035_x035",
+    "eta": 0.37970618,
+    "mass": 68.039007,
+    "payout": 169046280.0
+   },
+   "topsis_no1": {
+    "ID": "L6_Ph200_T335_Tt500_Pm079_Pe035_x037",
+    "eta": 0.38228985,
+    "mass": 68.399712,
+    "payout": 170222100.0
+   },
+   "knee": {
+    "ID": "L2_Ph200_Pl077_T335_Tt500",
+    "eta": 0.33291541,
+    "mass": 59.644453,
+    "payout": 148217440.0
+   },
+   "knee_no1": {
+    "ID": "L6_Ph200_T335_Tt500_Pm079_Pe035_x037",
+    "eta": 0.38228985,
+    "mass": 68.399712,
+    "payout": 170222100.0
+   },
+   "winners": {
+    "2": {
+     "payout": "L2_Ph200_Pl077_T335_Tt500",
+     "topsis": "L2_Ph200_Pl077_T335_Tt500"
+    },
+    "3": {
+     "payout": "L3_Ph200_Pl077_T320_Tt500_x036",
+     "topsis": "L3_Ph200_Pl077_T330_Tt500_x044"
+    },
+    "5": {
+     "payout": "L5_Ph200_Pl077_T320_Tt500_Pm080_x036",
+     "topsis": "L5_Ph200_Pl077_T325_Tt500_Pm080_x046"
+    },
+    "6": {
+     "payout": "L6_Ph200_T320_Tt500_Pm077_Pe053_x045",
+     "topsis": "L6_Ph200_T335_Tt500_Pm079_Pe035_x035"
+    }
+   },
+   "edges": {
+    "L2_Ph200_Pl077_T335_Tt500": [],
+    "L3_Ph200_Pl077_T330_Tt500_x044": [],
+    "L3_Ph200_Pl077_T320_Tt500_x036": [],
+    "L5_Ph200_Pl077_T325_Tt500_Pm080_x046": [
+     "x+"
+    ],
+    "L5_Ph200_Pl077_T320_Tt500_Pm080_x036": [],
+    "L6_Ph200_T335_Tt500_Pm079_Pe035_x035": [],
+    "L6_Ph200_T320_Tt500_Pm077_Pe053_x045": []
+   }
+  },
+  "cond": {
+   "payout": false,
+   "topsis": false,
+   "edges": false
+  },
+  "minutes": 92.91907503207524,
+  "verdict": "NOT converged: the 90-minute limit was reached during round 2. Unmet: payout, topsis, edges."
  }
 ]
