@@ -62,7 +62,7 @@ def _design_label(id_):
     return s
 
 
-def pareto_plot(rows, name="pareto_payout_vs_mass.png"):
+def pareto_plot(rows, name="pareto_payout_vs_mass.png", ylabel="10-year payout (M$)"):
     """Payout vs mass for the ranked layouts, Pareto front, knee / TOPSIS #1 and the
     recuperated reference. `rows`: results_econ.csv or results_econ_strict.csv."""
     import config
@@ -109,7 +109,7 @@ def pareto_plot(rows, name="pareto_payout_vs_mass.png"):
                     ha="left", va="bottom", fontsize=8, arrowprops=arrow)
 
     ax.set_xlabel("Mass (t)")
-    ax.set_ylabel("10-year payout (M$)")
+    ax.set_ylabel(ylabel)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     for s in ("left", "bottom"):

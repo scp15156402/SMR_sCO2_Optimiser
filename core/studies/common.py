@@ -116,7 +116,7 @@ def solve_task(task):
                 if not r1.ok:
                     break
                 new = r1.metrics["mdot"]
-                done = abs(new - mdot) <= 1e-7 * mdot
+                done = abs(new - mdot) <= 1e-6 * mdot
                 mdot = new
                 if done:
                     break
@@ -170,7 +170,7 @@ def sweep(tasks, folder, stem, columns=COLUMNS, workers=None, point_timeout=None
         n = 0
         try:
             for t, status, payload in sp._run_points(
-                    todo, workers or config.SWEEP_WORKERS,
+                    todo, min(workers or config.SWEEP_WORKERS, len(todo)),
                     point_timeout or sp.POINT_TIMEOUT_S, stall or sp.STALL_S, work=solve_task):
                 if status == "feasible":
                     ok_w.writerow([payload.get(c, "") for c in columns])
@@ -227,11 +227,11 @@ def as_strings(rows):
     return [{k: _fmt(v) for k, v in r.items()} for r in rows]
 
 
-def pareto_png(rows, folder, name):
+def pareto_png(rows, folder, name, ylabel="10-year payout (M$)"):
     """Pareto figure in the core/plots.py style (commit 96d7df2)."""
     from core.plots import pareto_plot
     rel = (folder / name).relative_to(ROOT / "out")
-    return pareto_plot(as_strings(rows), str(rel).replace("\\", "/"))
+    return pareto_plot(as_strings(rows), str(rel).replace("\\", "/"), ylabel)
 
 
 def baseline():
