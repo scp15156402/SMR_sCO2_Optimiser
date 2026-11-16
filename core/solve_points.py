@@ -46,21 +46,22 @@ def _ignore_sigint():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
-def _worker_loop(conn):
-    """Long-lived worker: receive an ID, send back (id, status, payload); None ends it."""
+def _worker_loop(conn, work=_work):
+    """Long-lived worker: receive a task, send back work(task) = (task, status,
+    payload); None ends it. `work` must be a module-level (picklable) function."""
     _ignore_sigint()
     while True:
         id_ = conn.recv()
         if id_ is None:
             return
-        conn.send(_work(id_))
+        conn.send(work(id_))
 
 
 class _Slot:
     """One worker process with its own pipe, so a hung point can be killed alone."""
-    def __init__(self):
+    def __init__(self, work=_work):
         self.conn, child = mp.Pipe()
-        self.proc = mp.Process(target=_worker_loop, args=(child,), daemon=True)
+        self.proc = mp.Process(target=_worker_loop, args=(child, work), daemon=True)
         self.proc.start()
         child.close()
         self.id, self.t = None, None
@@ -75,13 +76,14 @@ class _Slot:
         self.conn.close()
 
 
-def _run_points(todo, workers, point_timeout, stall, deadline=None, deadline_label=""):
+def _run_points(todo, workers, point_timeout, stall, deadline=None, deadline_label="",
+                work=_work):
     """Yield (id, status, payload) as points finish. Points over `point_timeout`
     seconds are killed and yielded as infeasible "timeout"; a dead worker's point
     as "error: worker died". Raises SystemExit(3) if nothing finishes for `stall` s,
     KeyboardInterrupt at `deadline` (epoch seconds)."""
     queue = list(reversed(todo))
-    slots = [_Slot() for _ in range(workers)]
+    slots = [_Slot(work) for _ in range(workers)]
     last = time.time()
     try:
         while queue or any(s.id for s in slots):
@@ -110,7 +112,7 @@ def _run_points(todo, workers, point_timeout, stall, deadline=None, deadline_lab
                     continue
                 if dead:              # replace a killed or crashed worker
                     s.kill()
-                    slots[i] = s = _Slot()
+                    slots[i] = s = _Slot(work)
                 s.id = s.t = None
                 last = time.time()
                 yield out

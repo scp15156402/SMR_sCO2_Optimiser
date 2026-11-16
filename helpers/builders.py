@@ -1,10 +1,16 @@
 """helpers/builders.py: point ID -> cycles.Case.
 
 Every number comes from config.py or from the ID itself; none is typed here.
-Pressure drops are zero (config.PRESSURE_DROP), so no dp parameters are set.
 Every compressor uses ETA_COMPRESSOR, the turbine ETA_TURBINE, every
 recuperator Effectiveness(RECUP_EFFECTIVENESS), the heater T_out = T_turb and
 every cooler T_out = T_in with the water side.
+
+config.PRESSURE_DROP (default 0) is a fractional loss applied to every
+exchanger side: both recuperator sides, every cooler and the heater. The ID
+pressures stay the compressor inlet/outlet pressures; in layout 6 the
+pre-compressor then discharges at P_mid / (1 - dp) so that P_mid is reached at
+the main compressor inlet after PC2. config.COOLANT_P_PA (default None = the
+solver's 6 bar) sets the cooling-water pressure.
 """
 from cycles import Case, CoolantPinch, Effectiveness, ThermalPower
 from cycles.units import K, MPa, MW, degC
@@ -30,11 +36,15 @@ def _cooler(T_out, nodes):
     """Cooler parameters. nodes=None: no water side (cycle-only, fast);
     otherwise the coolant side is sized with this many profile slices."""
     p = dict(T_out=T_out)
+    if config.PRESSURE_DROP:
+        p["dp"] = config.PRESSURE_DROP
     if nodes is not None:
         p.update(coolant_fluid="Water",
                  coolant_T_in=degC(config.T_WATER_IN_C),
                  coolant=CoolantPinch(K(config.COOLER_PINCH_K)),
                  nodes=nodes)
+        if getattr(config, "COOLANT_P_PA", None):
+            p["coolant_P"] = config.COOLANT_P_PA
     return p
 
 
@@ -43,16 +53,22 @@ def _comp(P_out_MPa):
 
 
 def _recup():
-    return dict(spec=Effectiveness(config.RECUP_EFFECTIVENESS))
+    p = dict(spec=Effectiveness(config.RECUP_EFFECTIVENESS))
+    if config.PRESSURE_DROP:
+        p.update(dp_hot=config.PRESSURE_DROP, dp_cold=config.PRESSURE_DROP)
+    return p
 
 
 def _case(id_, layout, ph, boundary_P_MPa, params, pressures=None):
+    heater = dict(T_out=degC(ph["T_turb_C"]))
+    if config.PRESSURE_DROP:
+        heater["dp"] = config.PRESSURE_DROP
     return Case(
         name=id_, fluid="CO2", layout=layout,
         size=ThermalPower(MW(config.Q_THERMAL_MW)),
         boundary={"s1": {"T": degC(ph["T_in_C"]), "P": MPa(boundary_P_MPa)}},
         params={**params,
-                "HEATER": dict(T_out=degC(ph["T_turb_C"])),
+                "HEATER": heater,
                 "TURB":   dict(eta=config.ETA_TURBINE)},
         pressures=pressures or {},
     )
@@ -82,7 +98,7 @@ def _recompression(id_, ph, n):
     T = degC(ph["T_in_C"])
     return _case(id_, recompression, ph, ph["P_low_MPa"], {
         "MC":    _comp(ph["P_high_MPa"]),
-        "RC":    _comp(ph["P_high_MPa"]),
+        "RC":    _comp(ph["P_high_MPa"] * (1 - config.PRESSURE_DROP)),   # = LTR cold outlet
         "LTR":   _recup(),
         "HTR":   _recup(),
         "SPLIT": dict(x=ph["split"]),
@@ -109,7 +125,7 @@ def _recomp_intercooled(id_, ph, n):
         "LPC":   _comp(ph["P_mid_MPa"]),
         "IC":    _cooler(T, n),
         "HPC":   _comp(ph["P_high_MPa"]),
-        "RC":    _comp(ph["P_high_MPa"]),
+        "RC":    _comp(ph["P_high_MPa"] * (1 - config.PRESSURE_DROP)),   # = LTR cold outlet
         "LTR":   _recup(),
         "HTR":   _recup(),
         "SPLIT": dict(x=ph["split"]),
@@ -122,9 +138,9 @@ def _partial_cooling(id_, ph, n):
     Main compressor inlet s1 is at P_mid; turbine exhaust s7 at P_exh."""
     T = degC(ph["T_in_C"])
     return _case(id_, partial_cooling, ph, ph["P_mid_MPa"], {
-        "PCOMP": _comp(ph["P_mid_MPa"]),
+        "PCOMP": _comp(ph["P_mid_MPa"] / (1 - config.PRESSURE_DROP)),
         "MC":    _comp(ph["P_high_MPa"]),
-        "RC":    _comp(ph["P_high_MPa"]),
+        "RC":    _comp(ph["P_high_MPa"] * (1 - config.PRESSURE_DROP)),   # = LTR cold outlet
         "HTR":   _recup(),
         "LTR":   _recup(),
         "SPLIT": dict(x=ph["split"]),
