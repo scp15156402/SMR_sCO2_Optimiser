@@ -10,8 +10,24 @@ import config
 from brayton_cycle import recuperated
 from helpers.ids import parse_id, physical
 
+# Fixed role names -> block ids, so every layout fills the same CSV columns.
+# cooler_1 is always the cooler feeding the main compressor.
+ROLES = {
+    2: {"recup_1": "RECUP", "cooler_1": "COOLER"},
+}
 
-def _recuperated(id_, ph):
+
+def _cooler(T_out, coolant):
+    """Cooler parameters. coolant=False: no water side (cycle-only, fast)."""
+    p = dict(T_out=T_out)
+    if coolant:
+        p.update(coolant_fluid="Water",
+                 coolant_T_in=degC(config.T_WATER_IN_C),
+                 coolant=CoolantPinch(K(config.COOLER_PINCH_K)))
+    return p
+
+
+def _recuperated(id_, ph, coolant):
     """Layout 2: simple recuperated (brayton_cycle/recuperated.py)."""
     T_in = degC(ph["T_in_C"])
     return Case(
@@ -25,10 +41,7 @@ def _recuperated(id_, ph):
             "RECUP":  dict(spec=Effectiveness(config.RECUP_EFFECTIVENESS)),
             "HEATER": dict(T_out=degC(ph["T_turb_C"])),
             "TURB":   dict(eta=config.ETA_TURBINE),
-            "COOLER": dict(T_out=T_in,
-                           coolant_fluid="Water",
-                           coolant_T_in=degC(config.T_WATER_IN_C),
-                           coolant=CoolantPinch(K(config.COOLER_PINCH_K))),
+            "COOLER": _cooler(T_in, coolant),
         },
     )
 
@@ -36,10 +49,10 @@ def _recuperated(id_, ph):
 BUILDERS = {2: _recuperated}
 
 
-def build(id_):
+def build(id_, coolant=True):
     """Case for one point ID. Layouts without a builder raise NotImplementedError."""
     parsed = parse_id(id_)
     layout = parsed["layout"]
     if layout not in BUILDERS:
         raise NotImplementedError(f"layout {layout}: not built yet")
-    return BUILDERS[layout](id_, physical(parsed))
+    return BUILDERS[layout](id_, physical(parsed), coolant)
