@@ -30,7 +30,7 @@ class Case:
     name: str
     fluid: str
     layout: Flowsheet
-    size: object                          # ThermalPower | NetPower | MassFlow
+    size: object                          # ThermalPower | MassFlow
     boundary: Mapping[str, dict]          # stream id -> {"T":..., "P":...}
     params: Mapping[str, dict]            # block id -> parameters
     pressures: Mapping[str, float] = field(default_factory=dict)

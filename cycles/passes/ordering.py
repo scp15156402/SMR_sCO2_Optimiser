@@ -18,10 +18,6 @@ class Schedule:
     order: tuple        # block ids, in evaluation order
     tears: tuple        # stream ids guessed before the first pass
 
-    @property
-    def is_explicit(self) -> bool:
-        return not self.tears
-
 
 def build(layout, known_streams) -> Schedule:
     known = set(known_streams)

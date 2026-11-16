@@ -6,11 +6,9 @@ else about it is special, so this module reuses the recuperator's own
 profile and sizing functions rather than reimplementing them: the only new
 work is deciding how much coolant flows.
 
-That decision is the same shape as the recuperator's.  There, three specs
-(effectiveness, pinch, UA) all reduce to one effectiveness before any
-profile is built.  Here, four specs (flow, outlet temperature, temperature
-rise, pinch) all reduce to one coolant flow.  Same pattern, same reason: one
-primitive, four ways of naming it, and everything downstream identical.
+The coolant is specified by its pinch against the cycle stream; the coolant
+flow that achieves that pinch is found by bracketing, and everything
+downstream works from that flow.
 
 Why this lives in physics/ and not in the cooler block
 ------------------------------------------------------
@@ -25,8 +23,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ..numerics.roots import solve_monotone
-from ..specs import (CoolantFlow, CoolantOutlet, CoolantPinch, CoolantRise,
-                     COOLANT_SPECS)
+from ..specs import COOLANT_SPECS
 from ..stream import Stream
 from . import hx_profile, hx_sizing, hydraulics
 
@@ -90,20 +87,13 @@ def size(hot_in, hot_out, duty, spec, props, *, fluid, T_in, P,
                 f"above its inlet {T_in:.2f} K")
         return duty / (h_out - h_in)
 
-    # --- every spec collapses to a flow ---------------------------------
-    if isinstance(spec, CoolantFlow):
-        flow = spec.value
-    elif isinstance(spec, CoolantOutlet):
-        flow = flow_for_outlet(spec.value)
-    elif isinstance(spec, CoolantRise):
-        flow = flow_for_outlet(T_in + spec.value)
-    else:                                            # CoolantPinch
-        T_hot_in = props(hot_in.fluid).T_ph(hot_in.P, hot_in.h)
-        flow = solve_monotone(
-            lambda f: profile_for(f).pinch, spec.value,
-            flow_for_outlet(T_hot_in - 0.01),        # least coolant
-            flow_for_outlet(T_in + 0.5),             # most coolant
-            tol=1e-6)
+    # --- CoolantPinch: bracket the coolant flow that gives the pinch -----
+    T_hot_in = props(hot_in.fluid).T_ph(hot_in.P, hot_in.h)
+    flow = solve_monotone(
+        lambda f: profile_for(f).pinch, spec.value,
+        flow_for_outlet(T_hot_in - 0.01),            # least coolant
+        flow_for_outlet(T_in + 0.5),                 # most coolant
+        tol=1e-6)
 
     if flow <= 0.0:
         raise ValueError(f"block {block_id!r}: coolant flow must be positive")

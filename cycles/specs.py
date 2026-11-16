@@ -38,37 +38,12 @@ class UAperFlow:
     value: float
 
 
-HX_SPECS = (Effectiveness, Pinch, UAperFlow)
-
-
 # --- coolant side -----------------------------------------------------------
 # A cooler rejecting heat to an external supply is a counterflow exchanger
 # with one stream leaving the cycle, so it wants the same treatment as the
 # recuperator: say which quantity you are pinning and let the rest follow.
-# All four reduce to a coolant mass flow, the way the three above reduce to an
-# effectiveness.
-@dataclass(frozen=True)
-class CoolantFlow:
-    """Coolant mass flow per unit total cycle flow, given directly.
-
-    The one a sweep varies: the other three answer "what coolant do I need
-    to achieve this?", only this one answers "what do I get for this much?".
-    """
-    value: float
-
-
-@dataclass(frozen=True)
-class CoolantOutlet:
-    """Coolant leaves at this temperature, in K."""
-    value: float
-
-
-@dataclass(frozen=True)
-class CoolantRise:
-    """Coolant warms by this much, in K."""
-    value: float
-
-
+# The pinch reduces to a coolant mass flow, the way the three above reduce to
+# an effectiveness.
 @dataclass(frozen=True)
 class CoolantPinch:
     """Minimum approach between the cycle stream and the coolant, in K.
@@ -79,7 +54,7 @@ class CoolantPinch:
     value: float
 
 
-COOLANT_SPECS = (CoolantFlow, CoolantOutlet, CoolantRise, CoolantPinch)
+COOLANT_SPECS = (CoolantPinch,)
 
 
 # --- plant size -------------------------------------------------------------
@@ -90,15 +65,9 @@ class ThermalPower:
 
 
 @dataclass(frozen=True)
-class NetPower:
-    """Net shaft power, in W.  mdot = W_net / w_net."""
-    value: float
-
-
-@dataclass(frozen=True)
 class MassFlow:
     """Total cycle mass flow, in kg/s, given directly."""
     value: float
 
 
-SIZE_SPECS = (ThermalPower, NetPower, MassFlow)
+SIZE_SPECS = (ThermalPower, MassFlow)

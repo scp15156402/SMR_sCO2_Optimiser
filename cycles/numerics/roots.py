@@ -54,28 +54,6 @@ def solve_monotone(f, target, lo, hi, tol=1e-10, max_iter=200, clamp=True):
     return bisect(lambda x: f(x) - target, lo, hi, tol=tol, max_iter=max_iter)
 
 
-def successive_substitution(g, x0, tol=1e-8, max_iter=200, relax=1.0):
-    """Solve x = g(x).
-
-    Used for the recuperator tear.  The map there is strongly contractive
-    (an enthalpy guess that is too high comes back lower), so plain
-    substitution converges in a handful of passes; relax < 1 is there for the
-    awkward corners near the critical point.
-
-    Returns (x, iterations, residual).
-    """
-    x = x0
-    for i in range(1, max_iter + 1):
-        xn = g(x)
-        res = abs(xn - x)
-        x = x + relax * (xn - x)
-        if res < tol * max(1.0, abs(x)):
-            return x, i, res
-    raise ConvergenceError(
-        f"tear did not converge in {max_iter} iterations; residual {res:g}"
-    )
-
-
 def secant(f, target, x0, lo, hi, tol=1e-10, max_iter=40, step=1e-4):
     """Find x with f(x) = target, starting from a good guess x0.
 

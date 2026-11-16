@@ -84,7 +84,7 @@ Pinch(K(5))           # secant on effectiveness
 UAperFlow(ua)         # secant on effectiveness
 ```
 
-Plant size takes one of `ThermalPower`, `NetPower` or `MassFlow`.
+Plant size takes one of `ThermalPower` or `MassFlow`.
 
 Which specification you give decides which loop the solver runs. That is the
 whole reason the solver is built this way: Dostal fixes effectiveness or
