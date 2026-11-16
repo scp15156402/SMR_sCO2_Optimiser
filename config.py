@@ -29,7 +29,7 @@ COOLER_KG_PER_KW_K  = 2.5     # same PCHE rule applied to coolers
 # every cooler and intercooler cools the CO2 to the compressor inlet temperature T_in
 EXTRA_COMPRESSORS   = {1: 0, 2: 0, 3: 1, 4: 1, 5: 2, 6: 2}   # by layout number
 DENSITY_T_PER_M3    = BASELINE_MASS_T / BASELINE_VOLUME_M3   # volume = mass / this
-STRICT_INLET_PRESSURE = True  # UNDECIDED, affects layout 6 only; settle before part B
+STRICT_INLET_PRESSURE = False # 7.7 MPa limit applied to the main compressor only; under the literal reading layout 6 is excluded
 
 LIFETIME_YEARS      = 10      # N in the lifetime payout
 N_TOP               = 5       # size of each top-N list
@@ -37,6 +37,10 @@ TOPSIS_WEIGHTS      = {"payout": 0.5, "mass": 0.5}   # payout max, mass min
 
 T_CRIT_C, P_CRIT_MPA = 30.978, 7.377   # CO2 critical point
 
+COOLER_NODES = 50    # cooler profile slices for sweeps (UA within 0.05 % of 100 at both reference points); state export uses 100
+SWEEP_WORKERS = 8    # throughput peaked at 8 on this machine
+
 # ---------- D. Calibrated in part A (pasted in by hand) ----------
-M0_T      = None   # tonnes: 60 - recuperator mass - cooler mass at the reference point
-M0_REF_ID = None   # ID of the best-efficiency feasible layout-2 point
+M0_T      = 39.059   # tonnes: 60 - recuperator mass - cooler mass at the reference point
+M0_REF_ID = "L2_Ph200_Pl077_T340_Tt500"   # ID of the best-efficiency feasible layout-2 point
+# reference: eta 0.33306362, UA_recup_1 1865.63 kW/K, UA_cooler_1 6510.83 kW/K (50 cooler slices)

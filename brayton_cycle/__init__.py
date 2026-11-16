@@ -5,6 +5,7 @@ No numbers live here; those belong in a case.  A new layout is a new file.
 """
 from .intercooled import intercooled
 from .partial_cooling import partial_cooling
+from .recomp_intercooled import recomp_intercooled
 from .recompression import recompression
 from .recuperated import recuperated
 from .simple import simple
@@ -14,8 +15,9 @@ LAYOUTS = {
     "recuperated": recuperated,
     "recompression": recompression,
     "intercooled": intercooled,
+    "recomp_intercooled": recomp_intercooled,
     "partial_cooling": partial_cooling,
 }
 
 __all__ = ["simple", "recuperated", "recompression", "intercooled",
-           "partial_cooling", "LAYOUTS"]
+           "recomp_intercooled", "partial_cooling", "LAYOUTS"]

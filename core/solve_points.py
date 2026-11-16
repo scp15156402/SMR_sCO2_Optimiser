@@ -15,6 +15,7 @@ import time
 from collections import Counter
 from pathlib import Path
 
+import config
 from helpers.checks import COLUMNS as RAW_COLUMNS
 from helpers.checks import evaluate
 from helpers.ids import parse_id
@@ -80,8 +81,17 @@ def main(argv=None):
     ap.add_argument("--grid", help="only IDs from this grid")
     ap.add_argument("--ids", nargs="+", help="only these IDs (must be in inputs.csv)")
     ap.add_argument("--limit", type=int, help="solve at most N new points this run")
-    ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 1))
+    ap.add_argument("--workers", type=int, default=config.SWEEP_WORKERS)
+    ap.add_argument("--deadline", help="HH:MM local time: stop cleanly then, as on Ctrl+C")
     args = ap.parse_args(argv)
+    deadline = None
+    if args.deadline:
+        hh, mm = map(int, args.deadline.split(":"))
+        now = time.localtime()
+        deadline = time.mktime((now.tm_year, now.tm_mon, now.tm_mday, hh, mm, 0, 0, 0, -1))
+        if time.time() >= deadline:
+            print(f"deadline {args.deadline} already passed; nothing run")
+            return
 
     with open(INPUTS, newline="", encoding="utf-8") as fh:
         inputs = list(csv.DictReader(fh))
@@ -113,7 +123,17 @@ def main(argv=None):
     interrupted = False
     pool = mp.Pool(workers, initializer=_ignore_sigint)
     try:
-        for id_, status, payload in pool.imap_unordered(_work, todo, chunksize=1):
+        it = pool.imap_unordered(_work, todo, chunksize=1)
+        while True:
+            if deadline is not None and time.time() >= deadline:
+                print(f"\ndeadline {args.deadline} reached")
+                raise KeyboardInterrupt
+            try:
+                id_, status, payload = it.next(timeout=2)
+            except mp.TimeoutError:
+                continue
+            except StopIteration:
+                break
             if status == "feasible":
                 raw_w.writerow([payload[c] for c in RAW_COLUMNS])
                 raw_fh.flush()
@@ -147,6 +167,23 @@ def main(argv=None):
     for k, v in sorted(reasons.items()):
         print(f"  {k}: {v}")
     print(f"wall {wall:.1f} s, {n / wall if wall else 0:.2f} points/s")
+    label = args.grid or ("ids" if args.ids else "all")
+    log_run(label + (" (interrupted)" if interrupted else ""), workers, n, n_feas, n_inf, wall)
+
+
+SWEEP_LOG = DATA / "sweep_log.csv"
+
+
+def log_run(label, workers, n, n_feas, n_inf, wall):
+    """Append one line per run to data/sweep_log.csv (read by core.summary)."""
+    new = not SWEEP_LOG.exists()
+    with open(SWEEP_LOG, "a", newline="", encoding="utf-8") as fh:
+        w = csv.writer(fh, lineterminator="\n")
+        if new:
+            w.writerow(["run", "workers", "attempted", "feasible", "infeasible",
+                        "wall_s", "points_per_s"])
+        w.writerow([label, workers, n, n_feas, n_inf, f"{wall:.1f}",
+                    f"{n / wall if wall else 0:.3f}"])
 
 
 if __name__ == "__main__":
