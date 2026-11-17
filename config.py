@@ -12,7 +12,7 @@ KG_PER_KW_K        = 2.5      # PCHE mass per unit UA
 EXTRA_COMPRESSOR_T = 1.5      # per compressor beyond the first
 BASELINE_MASS_T    = 60.0     # baseline PCS (simple recuperated)
 BASELINE_VOLUME_M3 = 120.0
-PRESSURE_DROP      = 0.0      # neglected on first pass (brief allows)
+PRESSURE_DROP      = 0.0      # neglected on first pass (brief allows); fraction per exchanger side
 
 # ---------- B. Constraints from the brief ----------
 T_INLET_MIN_C      = 32.0     # compressor inlet
@@ -26,6 +26,7 @@ SPLIT_MIN, SPLIT_MAX = 0.0, 0.5
 RECUP_EFFECTIVENESS = 0.90    # brief's baseline value, held fixed
 COOLER_PINCH_K      = 5.0     # CO2-water minimum approach; sets water flow and cooler UA
 COOLER_KG_PER_KW_K  = 2.5     # same PCHE rule applied to coolers
+COOLANT_P_PA        = None    # cooling-water pressure; None = solver default (6 bar)
 # every cooler and intercooler cools the CO2 to the compressor inlet temperature T_in
 EXTRA_COMPRESSORS   = {1: 0, 2: 0, 3: 1, 4: 1, 5: 2, 6: 2}   # by layout number
 DENSITY_T_PER_M3    = BASELINE_MASS_T / BASELINE_VOLUME_M3   # volume = mass / this

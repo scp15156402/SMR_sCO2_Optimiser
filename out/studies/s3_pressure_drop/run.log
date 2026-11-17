@@ -1,0 +1,7 @@
+[s3_pressure_drop/dp1pct] 0 to solve, 2656 already done
+studies/s3_pressure_drop/pareto_dp1pct.png: knee L6_Ph200_T335_Tt500_Pm079_Pe038_x038, TOPSIS #1 L6_Ph200_T335_Tt500_Pm079_Pe037_x038
+studies/s3_pressure_drop/pareto_dp1pct_strict.png: knee L3_Ph200_Pl077_T325_Tt500_x046, TOPSIS #1 L3_Ph200_Pl077_T325_Tt500_x046
+[s3_pressure_drop/dp2pct] 0 to solve, 2656 already done
+studies/s3_pressure_drop/pareto_dp2pct.png: knee L6_Ph200_T335_Tt500_Pm079_Pe037_x038, TOPSIS #1 L6_Ph200_T335_Tt500_Pm079_Pe037_x038
+studies/s3_pressure_drop/pareto_dp2pct_strict.png: knee L3_Ph200_Pl077_T325_Tt500_x045, TOPSIS #1 L3_Ph200_Pl077_T325_Tt500_x045
+-> out\studies\s3_pressure_drop\summary.md

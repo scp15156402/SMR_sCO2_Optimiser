@@ -56,13 +56,15 @@ PARETO_STYLE = {   # layout: (legend label, colour, marker)
 def _design_label(id_):
     p = physical(parse_id(id_))
     s = (f"TOPSIS first: layout {parse_id(id_)['layout']},\n"
-         f"T_in {p['T_in_C']:g} °C, x = {p['split']:.2f}")
-    if p["P_exh_MPa"] is not None:
+         f"T_in {p['T_in_C']:g} °C")
+    if p.get("split") is not None:              # layouts 2 and 4 have no split
+        s += f", x = {p['split']:.2f}"
+    if p.get("P_exh_MPa") is not None:
         s += f",\nP_exh {p['P_exh_MPa']:g} MPa"
     return s
 
 
-def pareto_plot(rows, name="pareto_payout_vs_mass.png"):
+def pareto_plot(rows, name="pareto_payout_vs_mass.png", ylabel="10-year payout (M$)"):
     """Payout vs mass for the ranked layouts, Pareto front, knee / TOPSIS #1 and the
     recuperated reference. `rows`: results_econ.csv or results_econ_strict.csv."""
     import config
@@ -109,7 +111,7 @@ def pareto_plot(rows, name="pareto_payout_vs_mass.png"):
                     ha="left", va="bottom", fontsize=8, arrowprops=arrow)
 
     ax.set_xlabel("Mass (t)")
-    ax.set_ylabel("10-year payout (M$)")
+    ax.set_ylabel(ylabel)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     for s in ("left", "bottom"):

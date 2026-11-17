@@ -1,0 +1,8 @@
+[s1_cooler_pinch/pinch5_reported] 0 to solve, 7 already done
+[s1_cooler_pinch/pinch3] 0 to solve, 2656 already done
+studies/s1_cooler_pinch/pareto_pinch3.png: knee L6_Ph200_T335_Tt500_Pm079_Pe036_x038, TOPSIS #1 L3_Ph200_Pl077_T325_Tt500_x047
+studies/s1_cooler_pinch/pareto_pinch3_strict.png: knee L3_Ph200_Pl077_T325_Tt500_x047, TOPSIS #1 L3_Ph200_Pl077_T325_Tt500_x047
+[s1_cooler_pinch/pinch8] 0 to solve, 2656 already done
+studies/s1_cooler_pinch/pareto_pinch8.png: knee L6_Ph200_T330_Tt500_Pm077_Pe045_x030, TOPSIS #1 L6_Ph200_T330_Tt500_Pm077_Pe045_x030
+studies/s1_cooler_pinch/pareto_pinch8_strict.png: knee L3_Ph200_Pl077_T330_Tt500_x042, TOPSIS #1 L3_Ph200_Pl077_T330_Tt500_x042
+-> out\studies\s1_cooler_pinch\summary.md

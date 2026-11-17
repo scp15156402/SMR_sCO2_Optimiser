@@ -1,0 +1,4 @@
+key,ID,reason
+50|L1_Ph160_Pl077_T400_Tt500,L1_Ph160_Pl077_T400_Tt500,"error: ValueError: Saturation pressure [5e+06 Pa] corresponding to T [537.091 K] is within 1e-4 % of given p [5e+06 Pa] : PropsSI(""H"",""P"",5000000,""T"",537.090722,""Water"")"
+50|L1_Ph180_Pl077_T400_Tt500,L1_Ph180_Pl077_T400_Tt500,"error: ValueError: Saturation pressure [5e+06 Pa] corresponding to T [537.091 K] is within 1e-4 % of given p [5e+06 Pa] : PropsSI(""H"",""P"",5000000,""T"",537.090722,""Water"")"
+50|L1_Ph200_Pl077_T400_Tt500,L1_Ph200_Pl077_T400_Tt500,"error: ValueError: Saturation pressure [5e+06 Pa] corresponding to T [537.091 K] is within 1e-4 % of given p [5e+06 Pa] : PropsSI(""H"",""P"",5000000,""T"",537.090722,""Water"")"
