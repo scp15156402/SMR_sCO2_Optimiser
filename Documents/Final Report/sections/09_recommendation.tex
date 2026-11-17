@@ -1,0 +1,16 @@
+\section{Recommendation}
+Following the reading of the \SI{7.7}{MPa} limit that we decided on (it applies to the main compressor inlet), the recommended cycle is the \textbf{partial cooling cycle (layout 6)} at \SI{20}{MPa} turbine inlet pressure and \SI{500}{\celsius} turbine inlet temperature, with the main compressor at \SI{7.9}{MPa} and \SI{33.5}{\celsius}, the turbine exhausting to \SI{3.7}{MPa}, and a split fraction of 0.38. It delivers \SI{38.7}{MWe} at 38.7\% efficiency, has a mass of \SI{69.2}{t}, and returns \$172.4M over ten years.
+
+The reasons are:
+\begin{enumerate}
+  \item It is first by TOPSIS for every lifetime tested, it lies on the Pareto front, and the knee is its immediate neighbour ($\Pe$ \SI{0.1}{MPa} lower).
+  \item Against the recuperated baseline it adds 5.4 points of efficiency for \SI{9.2}{t} of extra hardware, and the added output recovers the added hardware cost in about 10 months (incremental payback, Table~\ref{tab:increment}). It is also slightly more compact in MWe per tonne.
+  \item Its low exhaust pressure makes it the lightest way found to obtain a large gain over the baseline: it is \SI{9.1}{t} lighter than the highest-payout design.
+  \item Intercooling is not recommended in either form. It adds mass without a matching gain in efficiency.
+\end{enumerate}
+
+The choice depends on two judgements. The first is how much mass matters. Payout already includes the cost of hardware, so if mass has no value beyond its cost, the best design is the recompression cycle at \SI{32}{\celsius} and $x = 0.36$: 42.3\%, \SI{78.2}{t} and \$187.7M. The recommended design gives up \$15.3M (8.1\%) of that payout to be \SI{9.1}{t} (11.6\%) lighter. If mass were a hard limit near \SI{60}{t}, the recuperated cycle would be the choice, at a cost of \$24.2M of payout over ten years. The second is the reading of the \SI{7.7}{MPa} limit. Read literally, it excludes the recommended design, and the recommendation becomes the recompression cycle at 20 / \SI{7.7}{MPa}, \SI{32.5}{\celsius} and $x = 0.46$ (39.7\%, \SI{70.8}{t}, \$177.0M), which is almost as good on the ranking and needs fewer machines.
+
+The extended studies (Section~\ref{sec:studies}) support the recommendation: it holds under pressure drops, discounting, an \SI{8}{K} cooler pinch and moderate differences in the price of exchangers and machines, and with its recuperators frozen it loses 0.25 points of efficiency per kelvin of compressor inlet drift, a quarter of the loss of the recompression designs. It gives way to the recompression cycle above if the cooler pinch is \SI{3}{K} or if heat exchangers cost less than about a quarter as much per kilogram as turbomachinery, and it depends more than recompression on a high turbine inlet temperature.
+
+Two cautions remain (Section~\ref{sec:results}, \emph{Cautions on the selected design}). The heater, which is not counted, spans a wider temperature range for the recommended design, so its omission favours it. The design also rests on the reading of the \SI{7.7}{MPa} limit, since its pre-compressor works at \SI{3.7}{MPa}. The effects listed as untested in Section~\ref{sec:limits} remain outside the study.

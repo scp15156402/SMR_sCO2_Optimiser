@@ -21,6 +21,9 @@ Turbine inlet temperature & Swept at and below \SI{500}{\celsius}. & It is given
 Is the simple cycle ranked? & No. It is solved and reported, but left out of the Pareto front, knee and TOPSIS. & At 15\% efficiency it is not a candidate, but as the lightest layout it would set the light end of the front and move the knee towards light designs.\\
 What is layout 5? & Layout 3 with two intercooled main-compression stages. & The layout is given only as recompression with intercooling. The recompressor takes warm fluid, so intercooling is applied to the main compressor only.\\
 \SI{7.7}{MPa} limit in layout 6 & Applied to the main compressor inlet only; the pre-compressor inlet ($\Pe$) is below it. & The layout requires $\Pe$ below the main compressor inlet pressure. The inlet stays single-phase, since its temperature is above the critical temperature.\\
+The literal reading of that limit & Also ranked (strict ranking), but not followed. & It decides the result, so its outcome is reported beside ours.\\
+When to stop refining & When the winners stop moving and none lies on a free edge of its range. & Further points in the same ranges would not change the answer.\\
+$M_0$ in the studies & Recalibrated on the same reference design when the cycle model changes (S1); held at \SI{39.06}{t} where recalibration would switch the reference design (S3). & $M_0$ stands for the hardware outside the exchangers, which a change of reference design does not alter. A constant shift of every mass leaves the Pareto front and knee unchanged but moves TOPSIS, which scales by vector length.\\
 \bottomrule
 \end{tabularx}
 \caption{Modelling decisions.}\label{tab:decisions}

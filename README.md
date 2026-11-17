@@ -2,6 +2,12 @@
 
 This project sizes a supercritical-CO₂ Brayton power cycle for a 100 MWth small modular reactor. It sweeps six layouts (simple, recuperated, recompression, intercooled, recompression with intercooling, partial cooling) over compressor-inlet pressure and temperature, turbine-inlet temperature, intermediate pressures and recompression split. Each point is solved with the block-based solver in `cycles/` (CoolProp properties, pinch-sized recuperators and water-cooled coolers), then checked against the brief's constraints. Efficiency and heat-exchanger conductance are converted into hardware mass, cost and lifetime payout. The feasible designs are ranked by Pareto front, knee point and TOPSIS, and the best ones are written out as state tables and T-s diagrams. Settings are in `config.py`, sweep ranges are in `grids.py`, and the design rationale is in [PLAN.md](PLAN.md).
 
+**Report:** [Full_Report.pdf](Full_Report.pdf).
+
+**Result:** the selected design is layout 6 (partial cooling) at 20 MPa. The main compressor runs at 7.9 MPa and 33.5 °C, the exhaust is at 3.7 MPa, and the recompression split is x = 0.38. It reaches 38.7 % thermal efficiency with 69.2 t of hardware, for a payout of $172.4M over 10 years. Under the literal reading of the 7.7 MPa limit, which applies it to every compressor inlet, the selection is layout 3 (recompression) at 32.5 °C with x = 0.46.
+
+**Extended studies:** nine sensitivity studies (S1–S9) are in [`core/studies/`](core/studies/), with their results and an overview in [`out/studies/README.md`](out/studies/README.md).
+
 ## Running the pipeline
 
 Requires Python with `CoolProp`, `numpy`, `matplotlib` and `pytest`. Run every step from the repository root:

@@ -1,39 +1,64 @@
 \section{Assumptions and limitations}\label{sec:limits}
 
-The given mass and cost figures are illustrative, and several quantities had to be assumed. The study is therefore a first-pass comparison of layouts and not a design calculation. The points below state what we assumed and how it could affect the conclusions.
+The given mass and cost figures are illustrative, and several quantities had to be assumed. These assumptions are part of the definition of the study: the selection in Section~\ref{sec:results} is the best design \emph{under them}. We tested every assumption that could be varied within the model (Section~\ref{sec:studies}); the rest are stated here as limits of the study. Table~\ref{tab:assume} gives the status of each, and the paragraphs below give the detail.
+
+\begin{table}[h]\centering\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+Assumption & Tested in & Effect on the selection\\
+\midrule
+No pressure drops & S3 & Efficiencies fall; selection unchanged \\
+Cooler pinch \SI{5}{K} & S1 & Unchanged at \SI{8}{K}; recompression at \SI{3}{K}\\
+One price per kilogram & S4 & Unchanged up to a price ratio of 2; recompression at 4 and above\\
+Lifetime, electricity value, hardware price & Table~\ref{tab:life} & TOPSIS unchanged; knee moves to recompression at 20 years\\
+No discounting & S5 & Unchanged\\
+Single design point & S2 (partly) & Selected design loses 0.25 points/K of inlet drift, recompression 1.0 to 1.4\\
+Turbine inlet \SI{500}{\celsius}, \SI{20}{MPa} & S6, S7 & Both limits are binding; partial cooling gains most from \SI{500}{\celsius}\\
+Cooling water at \SI{6}{bar} & S8 & Layout 1 remains far behind\\
+Grid resolution & Table~\ref{tab:refine} & Converged\\
+\addlinespace
+Constant machine efficiencies & -- & Not tested\\
+Fixed turbomachinery mass & -- & Not tested\\
+Heater left out & -- & Not tested; penalises the selected design\\
+Pumping power and operating costs & -- & Not tested\\
+\bottomrule
+\end{tabularx}
+\caption{The assumptions of the study and the tests made of them.}\label{tab:assume}
+\end{table}
 
 \paragraph{Cycle model}
 \begin{itemize}
-  \item \textbf{No pressure drops.} All heat exchangers and pipes are taken as isobaric, so pressure drops are neglected throughout this project. They could be modelled: the solver accepts a pressure drop for each exchanger side (\path{cycles/physics/pressure_drop.py}) and resolves the resulting pressures around the loop, but we set every drop to zero. Real losses of 1--2\% of pressure per exchanger side would lower every efficiency, and would penalise the layouts with more exchangers (layouts 3 to 6) slightly more than the simpler ones.
-  \item \textbf{Constant component efficiencies.} The same isentropic efficiencies are used for every compressor and for the turbine, whatever their size, pressure ratio or inlet state.
-  \item \textbf{Fixed recuperator effectiveness.} Effectiveness is listed as a design variable. It is held at 0.90 here, and designs whose pinch falls below \SI{5}{K} are rejected.
-  \item \textbf{Design point only.} Part-load and off-design operation are not modelled.
+  \item \textbf{No pressure drops.} Every heat exchanger and pipe is isobaric in the main study. The solver accepts a pressure drop for each exchanger side (\path{cycles/physics/pressure_drop.py}), and study S3 re-solved every design with losses of 1\% and 2\% per side. The best efficiency of each layout falls by 1.0 to 1.7 points at 1\% and by 2.1 to 3.6 points at 2\%, and the recompression layouts lose most. The selected design stays first by TOPSIS at both levels, and it loses less than the recompression designs. The designs were optimised without losses and then re-solved with them; we did not re-optimise with losses included.
+  \item \textbf{Constant component efficiencies.} The same isentropic efficiencies are used for every compressor and for the turbine, whatever their size, pressure ratio or inlet state. This was not tested. It treats the low-density pre-compressor of layout~6 and the recompressor of layouts 3, 5 and 6 as well as the main compressor.
+  \item \textbf{Fixed recuperator effectiveness.} Effectiveness is held at 0.90, and designs whose pinch falls below \SI{5}{K} are rejected. Study S9 shows every recuperator pinch of the named designs at \SI{10.4}{K} or more, so the effectiveness, not the pinch limit, sizes these recuperators.
+  \item \textbf{Design point only.} Part-load operation is not modelled. Study S2 froze the recuperators at their design size and moved the compressor inlet temperature, which shows how each design responds to the most likely disturbance. It keeps the machine efficiencies, pressures and split fixed, so it is not an off-design model; that needs compressor and turbine maps and a control strategy, which are outside this study.
 \end{itemize}
 
 \paragraph{Coolers}
 \begin{itemize}
-  \item \textbf{Cooler pinch of \SI{5}{K}.} The water flow is not given. We assume a minimum temperature difference of \SI{5}{K}, which fixes the water flow and the cooler size. A smaller value gives a larger cooler and less water, and a larger value the opposite.
-  \item \textbf{No pumping power or pumping hardware.} The water flow that results from the pinch rule is large, and the power to pump it is not subtracted from the net output. The pump and water circuit are not included in the mass. This favours designs that reject more heat.
-  \item \textbf{Cooler mass.} The only guidance given is that the precooler scales with heat rejected. The recuperator's figure of \SI{2.5}{kg} per \si{kW/K} is applied to coolers too.
-  \item \textbf{Water side.} Cooling water is once-through at \SI{25}{\celsius} and \SI{6}{bar}, with no pressure drop.
+  \item \textbf{Cooler pinch of \SI{5}{K}.} The water flow is not given, so we fix a minimum temperature difference of \SI{5}{K}, which sets the water flow and the cooler size. Study S1 re-solved every design at \SI{3}{K} and \SI{8}{K}. The selection holds at \SI{8}{K} and moves to recompression at \SI{3}{K}.
+  \item \textbf{No pumping power or pumping hardware.} The power to pump the cooling water is not subtracted from the net output, and the pump and water circuit are not in the mass. This was not tested. It favours designs that reject more heat at a small temperature difference.
+  \item \textbf{Cooler mass.} The only guidance given is that the precooler scales with the heat rejected. We apply the recuperator figure of \SI{2.5}{kg} per \si{kW/K} to the coolers as well.
+  \item \textbf{Water side.} Cooling water is once-through at \SI{25}{\celsius} and \SI{6}{bar}, with no pressure drop. At \SI{6}{bar} the water boils in half of the simple-cycle designs; study S8 raised the pressure for that layout and showed that its exclusion from the ranking does not depend on this.
 \end{itemize}
 
 \paragraph{Mass and cost}
 \begin{itemize}
-  \item \textbf{Turbomachinery mass does not scale.} $M_0$ is constant across layouts and operating points. In reality the mass of the turbine and compressors depends on mass flow and pressure ratio. With a fixed machine mass, the model has no penalty for a high pressure ratio.
-  \item \textbf{One price for all hardware.} Every kilogram costs the same, \SI{250}{US\$/kg}, whether it is a printed-circuit heat exchanger, a cooler, a compressor or the turbine, so hardware cost is proportional to mass. In reality the cost per kilogram differs between component types: turbomachinery, with its bearings, seals and precision parts, costs more per kilogram than a diffusion-bonded heat exchanger. With separate prices, layouts with more compressors (layouts 3, 5 and 6) would be penalised more, and layouts that add exchanger area would be penalised less, than in this study.
-  \item \textbf{Heater and reactor excluded.} The reactor thermal power is the same for every design, so we leave the reactor out. The heater duty is also fixed at \SI{100}{MW}, but its inlet temperature differs between designs (it is higher when more heat is recuperated), so its size and cost are not exactly equal. We leave the heater out of mass and cost, which slightly favours designs that recuperate less.
-  \item \textbf{Volume carries no independent information.} It is mass divided by a constant density.
-  \item \textbf{No operating costs.} The payout counts electricity income and hardware cost only. Maintenance is not included, although it would grow with the number of compressors, seals and exchangers. Fuel and the operation of the reactor and heater are not included either. They are the same for every design only to first order.
-  \item \textbf{Fixed prices.} The electricity value of \SI{70}{US\$/MWh}, the \SI{7000}{h} of operation per year and the hardware price are held constant for $N$ years. Any of them may change over a ten-year life. A higher electricity value or a longer life favours the more efficient, heavier designs; a higher hardware price favours the lighter ones.
-  \item \textbf{No time value of money.} Income is not discounted and there is no financing, inflation or construction period. A discount rate would weight early years more and act like a shorter $N$.
-  \item \textbf{A ranking measure, not a financial one.} For all these reasons the payout and the incremental payback are used only to compare designs with each other and with the baseline. Neither is an estimate of what the plant would earn or when it would pay for itself. The sensitivity of the selection to $N$ is tested in Section~\ref{sec:results}.
-  \item \textbf{Complexity is not costed.} More components mean more seals, bearings, controls and failure modes. Only the given \SI{1.5}{t} per added compressor represents this. Where two layouts are close on payout, the simpler one should be preferred.
+  \item \textbf{Turbomachinery mass does not scale.} $M_0$ is constant across layouts and operating points, and each added compressor adds the given \SI{1.5}{t}. In reality machine mass depends on mass flow and pressure ratio, so the model has no penalty for a high pressure ratio or a large flow. This was not tested.
+  \item \textbf{One price for all hardware.} In the main study every kilogram costs \SI{250}{US\$/kg}, so hardware cost is proportional to mass. Turbomachinery, with its bearings, seals and precision parts, costs more per kilogram than a diffusion-bonded heat exchanger. Study S4 priced the two separately: the selection holds while turbomachinery costs up to twice as much per kilogram as exchangers, and moves to recompression, which has fewer machines, at four times and above.
+  \item \textbf{Heater and reactor excluded.} The reactor thermal power is the same for every design, so the reactor is left out. The heater duty is also fixed at \SI{100}{MW}, but its \cotwo{} inlet temperature differs between designs: \SI{270}{\celsius} for the selected design against \SI{351}{\celsius} for the strict-reading recompression design. The heater of the selected design therefore spans a wider temperature range. We leave the heater out of mass and cost because its reactor-side temperatures are not given, so its size cannot be computed. This was not tested, and it is the main omission that works against the selected design.
+  \item \textbf{No operating costs.} The payout counts electricity value and hardware cost only. Maintenance, which grows with the number of compressors, seals and exchangers, and the operation of the reactor and heater are not included. This was not tested.
+  \item \textbf{Fixed prices and lifetime.} The electricity value of \SI{70}{US\$/MWh}, \SI{7000}{h} of operation per year and the hardware price are held constant over $N$ years. Scaling the electricity value by a factor $k$ scales the revenue term exactly as scaling $N$ by $k$ does, and the Pareto front, the knee and TOPSIS are unchanged when both terms of the payout are scaled together. The lifetime test of Section~\ref{sec:results} ($N$ = 5, 10 and 20 years) therefore also covers halving or doubling the electricity value or the hardware price. TOPSIS selects the same design in all three cases.
+  \item \textbf{No time value of money.} Income is not discounted, and there is no financing, inflation or construction period. Study S5 applied discount rates up to 10\%. Discounting acts as a shorter lifetime, and the selection does not change.
+  \item \textbf{A ranking measure, not a financial one.} For these reasons the payout and the incremental payback compare designs with each other and with the baseline. Neither is an estimate of what the plant would earn or when it would pay for itself.
+  \item \textbf{Complexity is not costed.} More components mean more seals, bearings, controls and failure modes. Only the given \SI{1.5}{t} per added compressor represents this. Where two layouts are close on payout, as partial cooling and recompression are here, the simpler one carries less of this unpriced risk.
+  \item \textbf{Volume carries no independent information.} It is mass divided by a constant density, so it is not used as a separate objective.
 \end{itemize}
 
 \paragraph{Search}
 \begin{itemize}
-  \item \textbf{Grid resolution.} The operating variables are swept on a grid, so the optimum is located only to within the grid spacing. The grid is given in Table~\ref{tab:grid}. Around the selected design the split fraction is resolved to 0.01 and the inlet temperature to \SI{1}{K}. Elsewhere the split is resolved to 0.05, the pressures to \SI{0.5}{MPa} to \SI{2}{MPa} and the inlet temperature to \SI{4}{K}.
+  \item \textbf{Grid resolution.} The operating variables are swept on a grid (Table~\ref{tab:grid}), so the optimum is located to within the grid spacing. Around the winning designs the refinement (Section~\ref{sec:results}) resolves the pressures to \SI{0.1}{MPa}, the inlet temperature to \SI{0.5}{K} and the split fraction to 0.01, and it stopped when further points no longer changed the selection. Away from the winners the grid is coarser: split 0.05, pressures \SI{0.5}{MPa} to \SI{2}{MPa}, inlet temperature \SI{2}{K} to \SI{4}{K}.
 \end{itemize}
 
-Section~\ref{sec:results} tests the selection against the lifetime $N$ and the grid spacing.
+\paragraph{What the study does not cover.} Four groups of effects are outside the model and remain untested: the heater, which penalises the selected design; the scaling of machine efficiency and mass with size and inlet state; pumping power and operating costs; and true off-design operation with machine maps and control. Each of them changes the numbers. The tests we could run within the model moved the selection only between the same two designs, partial cooling and recompression, and that is the strongest statement this study supports.

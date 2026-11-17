@@ -9,4 +9,13 @@ desktop.ini
 # Archives and backups do not belong in the history.
 *.zip
 
+# LaTeX build files.
+*.aux
+*.log
+*.toc
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
 # NOT ignored, deliberately: data/ and out/ (study inputs, results, figures).

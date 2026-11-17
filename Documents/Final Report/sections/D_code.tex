@@ -2,9 +2,9 @@
 
 All code, input grids, result tables and plots of this study are in the repository
 \begin{center}
-\url{https://github.com/scp15156402/SMR_sCO2_Optimiser/tree/rebuild}
+\url{https://github.com/scp15156402/SMR_sCO2_Optimiser}
 \end{center}
-(branch \path{rebuild}). The code is Python and uses CoolProp for properties.
+This report corresponds to branch \path{main} at tag \path{final}. Earlier states are kept as tags: \path{rebuild} is the version submitted for the course, and \path{extended-v1} is the converged refinement before the extended studies. The compiled report is \path{Full_Report.pdf} at the top of the repository, and its \LaTeX{} source is in \path{Documents/Final Report/}. The code is Python and uses CoolProp for properties.
 
 \subsection{Folder structure}
 {\small
@@ -36,9 +36,12 @@ core/                the pipeline, run in this order
   solve_points.py      inputs -> data/results_raw.csv, data/infeasible.csv
   calibrate.py         layout 2 reference -> M0
   economics.py         mass, cost, payout, ranking -> data/results_econ.csv
+                       (and the strict ranking -> data/results_econ_strict.csv)
   export_states.py     shortlisted designs -> data/states.csv, shortlist.csv
   plots.py             figures and T-s diagrams -> out/
   summary.py           out/summary.md
+  refine.py            refinement rounds until convergence -> out/convergence.md
+  studies/             extended studies S1-S9 -> out/studies/
 data/                input and result tables (CSV)
 out/                 plots, T-s diagrams, summary
 tests/               tests of the solver, identifiers, checks, ranking, layouts
@@ -90,11 +93,13 @@ Report section & Files\\
 \ref{sec:objective} Mass, cost, payout & \path{core/calibrate.py}, \path{core/economics.py}\\
 \ref{sec:objective} Selection & \path{helpers/ranking.py}\\
 \ref{sec:objective} Fixed parameters & \path{config.py}\\
-\ref{sec:results} Grid and feasible set & \path{grids.py}, \path{core/make_inputs.py}, \path{core/solve_points.py}, \path{data/infeasible.csv}\\
+\ref{sec:results} Grid, refinement and feasible set & \path{grids.py}, \path{core/make_inputs.py}, \path{core/solve_points.py}, \path{core/refine.py}, \path{data/infeasible.csv}, \path{out/convergence.md}\\
+\ref{sec:results} Strict ranking & \path{core/economics.py}, \path{data/results_econ_strict.csv}\\
 \ref{sec:results} Calibration & \path{core/calibrate.py}\\
 \ref{sec:results} Trends, Pareto front, $T$--$s$ diagrams & \path{core/plots.py}, \path{out/}\\
 \ref{sec:results} Best designs, knee, TOPSIS, sensitivity & \path{core/economics.py}, \path{core/summary.py}, \path{out/summary.md}\\
 \ref{sec:results} Selected design and its states & \path{core/export_states.py}, \path{data/states.csv}, \path{data/shortlist.csv}\\
+\ref{sec:limits}, \ref{sec:studies} Extended studies S1--S9 & \path{core/studies/s1_*.py} to \path{s9_*.py}, \path{core/studies/run_all.py}, \path{out/studies/}\\
 \ref{app:numerics} Numerical methods & \path{cycles/solve.py}, \path{cycles/passes/tear.py}, \path{cycles/numerics/roots.py}, \path{helpers/ids.py}\\
 \ref{app:validation} Validation & \path{tests/test_solver.py} and the other files in \path{tests/}\\
 \bottomrule

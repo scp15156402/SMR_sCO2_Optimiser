@@ -26,7 +26,7 @@
 \titlespacing*{\section}{0pt}{1.6em}{1.0em}
 \titlespacing*{\subsection}{0pt}{1.2em}{0.5em}
 \setlength{\parskip}{0.35em}
-\newcommand{\code}[1]{\par\smallskip\noindent{\footnotesize\textbf{Code}\ \textbar\ #1}\par}
+\newcommand{\code}[1]{\par\smallskip\noindent{\footnotesize\raggedright\textbf{Code}\ \textbar\ #1\par}}
 \sisetup{detect-all,per-mode=symbol}
 \setlist{nosep}
 \captionsetup{font=small,labelfont=bf}
@@ -48,57 +48,32 @@
 %------------------------------- title page ----------------------------------
 \begin{titlepage}
 \thispagestyle{empty}
-\newgeometry{margin=2.2cm,top=2.4cm,bottom=2.2cm}
+\newgeometry{margin=2.2cm,top=3.0cm,bottom=2.4cm}
 \centering
-{\large\scshape ME 306 \textbullet{} Applied Thermodynamics\par}
-\vspace{0.15cm}
-{\small Department of Mechanical Engineering, Indian Institute of Technology Bombay\par}
-\vspace{1.1cm}
 {\color{black!70}\rule{\textwidth}{0.4pt}}\par\vspace{-0.25cm}
-\rule{\textwidth}{1.6pt}\par\vspace{0.55cm}
+\rule{\textwidth}{1.6pt}\par\vspace{0.6cm}
 {\fontsize{22}{27}\selectfont\bfseries Supercritical \cotwo{} Brayton Cycle\\[4pt] for a \SI{100}{MWth} Small Modular Reactor\par}
-\vspace{0.4cm}
+\vspace{0.45cm}
 {\large\itshape Cycle-layout selection under a mass and lifetime-payout trade-off\par}
-\vspace{0.5cm}
+\vspace{0.55cm}
 \rule{\textwidth}{1.6pt}\par\vspace{-0.25cm}
 {\color{black!70}\rule{\textwidth}{0.4pt}}\par
-\vspace{1.1cm}
+\vspace{1.3cm}
 
-\begin{minipage}[t]{0.47\textwidth}\centering
-{\small\scshape Team\par}\vspace{0.2cm}
-\renewcommand{\arraystretch}{1.3}
-\begin{tabular}{@{}l l@{}}
-\toprule
-Name & Roll number\\
-\midrule
-Siddhant Patil & 24B2121\\
-Vaishnavi Shivai & 24B2116\\
-Avinav Shekhar & 24B2186\\
-Anshuman Gupta & 24B2169\\
-Vidit Ganna & 24B2210\\
-\bottomrule
-\end{tabular}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.47\textwidth}\centering
-{\small\scshape Course instructor\par}\vspace{0.2cm}
-Prof.\ Shankar Krishnan\par
-\vspace{0.9cm}
-{\small\scshape Project mentor\par}\vspace{0.2cm}
-Prof.\ Janani Srree Murallidharan\par
-\end{minipage}
+{\Large Siddhant Patil\par}
+\vspace{0.5cm}
+{\small\scshape Course instructor\par}\vspace{0.1cm}
+{\large Prof.\ Shankar Krishnan\par}
 
-\vspace{1.2cm}
+\vspace{1.4cm}
 \begin{minipage}{0.9\textwidth}
 \small
 {\centering\scshape Abstract\par}\vspace{0.2cm}
 \setlength{\parindent}{0pt}\linespread{1.08}\selectfont
-Six supercritical \cotwo{} Brayton cycle layouts are compared for a \SI{100}{MWth} small modular reactor with a turbine inlet limit of \SI{500}{\celsius} and \SI{20}{MPa}: simple, recuperated, recompression, recuperated with intercooling, recompression with intercooling, and partial cooling. Each layout is solved with real-gas properties over a grid of pressures, compressor inlet temperatures and split fractions (1053 designs, 969 feasible). Heat-exchanger conductance is converted to mass, and designs are ranked on mass and on ten-year payout (electricity revenue less hardware cost) by a Pareto front, its knee point and TOPSIS. The simple cycle is reported but left out of the ranking, as it is not a credible candidate. The fixed mass is calibrated so that the best recuperated design (33.3\% efficiency) has the given baseline mass of \SI{60}{t}. The recommended design is the recompression cycle at \SI{20}{MPa}, \SI{7.7}{MPa} and \SI{33}{\celsius} compressor inlet and a split fraction of 0.40. It reaches 40.2\% efficiency at \SI{71.5}{t}, with a ten-year payout (electricity value less hardware cost, a comparative measure only) of \$178.9M against \$148.2M for the recuperated baseline. Its extra output recovers the cost of its extra hardware in about ten months. It gives up 2.1 points of efficiency and 4.7\% of payout against the highest-payout design found (the same cycle at \SI{32}{\celsius} and a split of 0.36), which is \SI{6.7}{t} heavier. Intercooling does not pay in either form.
+We compare six supercritical \cotwo{} Brayton cycle layouts for a \SI{100}{MWth} small modular reactor with turbine inlet limits of \SI{500}{\celsius} and \SI{20}{MPa}: simple, recuperated, recompression, recuperated with intercooling, recompression with intercooling, and partial cooling. We solve each layout with real-gas properties over a grid of pressures, compressor inlet temperatures and split fractions, and refine the grid around the best designs until further points no longer change the answer (2656 designs, 2561 feasible). Heat-exchanger conductance is converted to mass, and the designs are ranked on mass and on ten-year payout (electricity value less hardware cost) by a Pareto front, its knee point and TOPSIS. The simple cycle is solved but left out of the ranking, since at 15\% efficiency it is not a candidate. The fixed mass is calibrated so that the best recuperated design (33.3\% efficiency) has the given baseline mass of \SI{60}{t}. The selected design is the partial cooling cycle at \SI{20}{MPa}, with its main compressor at \SI{7.9}{MPa} and \SI{33.5}{\celsius}, the turbine exhausting to \SI{3.7}{MPa} and a split fraction of 0.38: 38.7\% efficiency, \SI{69.2}{t}, and a ten-year payout of \$172.4M against \$148.2M for the recuperated baseline. Its extra output recovers the cost of its extra hardware in about ten months. Its pre-compressor works below \SI{7.7}{MPa}; we apply that limit to the main compressor. Under the literal reading, which applies it to every compressor, the selection is a recompression cycle at \SI{32.5}{\celsius} and a split of 0.46 (39.7\%, \SI{70.8}{t}, \$177.0M), almost tied on the ranking. Intercooling does not pay in either form. Nine further studies vary the cooler pinch, pressure drops, component prices, discounting, compressor inlet temperature, turbine inlet temperature and pressure, and the cooling-water pressure. None of them moves the selection outside these two designs: partial cooling gives way to recompression for a \SI{3}{K} cooler pinch or when turbomachinery costs four or more times as much per kilogram as heat exchangers, and with its hardware frozen it loses 0.25 points of efficiency per kelvin of compressor inlet drift, against 1.0 to 1.4 for recompression. The heater, operating costs and true off-design operation lie outside the model; we state where each bears on the result.
 \end{minipage}
 
 \vfill
-{\color{black!70}\rule{0.5\textwidth}{0.4pt}}\par\vspace{0.2cm}
-{\small Code and data: \href{https://github.com/scp15156402/SMR_sCO2_Optimiser/tree/rebuild}{\texttt{github.com/scp15156402/SMR\_sCO2\_Optimiser/tree/rebuild}}\par}
-\vspace{0.25cm}
 {\scshape Autumn 2026\par}
 \restoregeometry
 \end{titlepage}
@@ -115,6 +90,8 @@ Six supercritical \cotwo{} Brayton cycle layouts are compared for a \SI{100}{MWt
 \input{sections/05_objective}
 \input{sections/06_assumptions}
 \input{sections/07_results}
+\input{sections/08_studies}
+\input{sections/09_recommendation}
 
 \appendix
 \input{sections/A_numerics}
