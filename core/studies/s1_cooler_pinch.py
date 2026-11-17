@@ -91,6 +91,26 @@ def changes(base, s):
     return out
 
 
+def pinch_met(rows, pinch, tol=0.01):
+    """Split rows into those whose coolers reach the pinch spec and those that cannot.
+
+    The water enters at config.T_WATER_IN_C, so the widest possible approach at the
+    cooler's cold end is T_in - T_water. When that is below the requested pinch the
+    solver's flow bracket ends at its most-water limit and returns a smaller pinch
+    with an enormous water flow; such a point does not meet the spec.
+    """
+    ok, bad = [], []
+    for r in rows:
+        got = min(float(r[c]) for c in ("pinch_cooler_1", "pinch_cooler_2") if r.get(c) not in ("", None))
+        if got < pinch - tol:
+            bad.append({"key": r["key"], "ID": r["ID"],
+                        "reason": f"cooler pinch {pinch:g} K unreachable: T_in {float(r['T_in_C']):g} C, "
+                                  f"water {config.T_WATER_IN_C:g} C, got {got:.2f} K"})
+        else:
+            ok.append(r)
+    return ok, bad
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int)
@@ -111,9 +131,22 @@ def main(argv=None):
             r["water_flow_kg_s"] = water[r["ID"]]
     sets = [dict(label="5 K (baseline)", raw=raw0, ref=ref0, m0=m00, main=main0, strict=strict0,
                  n_bad=len(read_csv(DATA / "infeasible.csv")))]
+    notes = []
     for pinch in PINCHES:
         stem = f"pinch{pinch:g}"
         ok, bad = sweep([task(i, i, opts={"COOLER_PINCH_K": pinch}) for i in ids], FOLDER, stem)
+        ok, unreachable = pinch_met(ok, pinch)
+        bad = bad + unreachable
+        if unreachable:
+            notes.append(f"At {pinch:g} K, {len(unreachable)} solver-converged points do not reach "
+                         f"the pinch (T_in - {config.T_WATER_IN_C:g} C water < {pinch:g} K; the "
+                         "solver stops at its most-water limit and reports a smaller pinch with "
+                         "water flows of order 10^4 kg/s). They are counted as infeasible and "
+                         f"listed in {stem}_unreachable.csv.")
+            with open(FOLDER / f"{stem}_unreachable.csv", "w", newline="", encoding="utf-8") as fh:
+                w = csv.writer(fh, lineterminator="\n")
+                w.writerow(["ID", "reason"])
+                w.writerows([b["ID"], b["reason"]] for b in sorted(unreachable, key=lambda b: b["ID"]))
         ref, m0 = calibrate(ok)
         main, strict = econ(ok, m0, ref["ID"])
         write_econ(main, FOLDER / f"econ_{stem}.csv")
@@ -133,7 +166,7 @@ def main(argv=None):
           "only the cooler UA, mass and water flow.", "",
           table(["case", "attempted", "feasible", "infeasible"],
                 [[s["label"], len(s["raw"]) + s["n_bad"], len(s["raw"]), s["n_bad"]] for s in sets]),
-          ""]
+          ""] + [x for n in notes for x in (n, "")]
     md += describe(sets)
     md += ["## Does the winner change? (against 5 K)", ""]
     for s in sets[1:]:
