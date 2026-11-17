@@ -12,6 +12,7 @@ desktop.ini
 # LaTeX build files.
 *.aux
 *.log
+!out/studies/**/run.log
 *.toc
 *.out
 *.fls
