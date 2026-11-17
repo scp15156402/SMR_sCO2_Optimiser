@@ -7,6 +7,7 @@ out/studies/<name>/run.log. A failure is recorded in that study's summary.md and
 the next study starts. Only the study's own script and output folder are staged
 (never git add -A, never Documents/).
 """
+import os
 import subprocess
 import sys
 import time
@@ -33,10 +34,11 @@ def run(name):
     print(f"\n=== {name} ({time.strftime('%H:%M')}) ===", flush=True)
     with open(folder / "run.log", "w", encoding="utf-8") as log:
         rc = subprocess.run([sys.executable, "-u", "-m", f"core.studies.{name}"], cwd=ROOT,
-                            stdout=log, stderr=subprocess.STDOUT).returncode
+                            stdout=log, stderr=subprocess.STDOUT,
+                            env={**os.environ, "PYTHONIOENCODING": "utf-8"}).returncode
     minutes = (time.time() - t0) / 60
     if rc != 0:
-        tail = (folder / "run.log").read_text(encoding="utf-8").splitlines()[-25:]
+        tail = (folder / "run.log").read_bytes().decode("utf-8", "replace").splitlines()[-25:]
         note = ["", f"## FAILED (exit code {rc}, after {minutes:.1f} min)", "",
                 "The study did not complete; the tail of run.log:", "", "```", *tail, "```", ""]
         summary = folder / "summary.md"
