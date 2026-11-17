@@ -1,0 +1,5 @@
+studies/s5_discounting/pareto_N10_r8.png: knee L6_Ph200_T335_Tt500_Pm079_Pe036_x038, TOPSIS #1 L6_Ph200_T335_Tt500_Pm079_Pe037_x038
+studies/s5_discounting/pareto_N10_r8_strict.png: knee L3_Ph200_Pl077_T330_Tt500_x043, TOPSIS #1 L3_Ph200_Pl077_T325_Tt500_x046
+studies/s5_discounting/pareto_N20_r8.png: knee L6_Ph200_T335_Tt500_Pm079_Pe036_x038, TOPSIS #1 L6_Ph200_T335_Tt500_Pm079_Pe037_x038
+studies/s5_discounting/pareto_N20_r8_strict.png: knee L3_Ph200_Pl077_T330_Tt500_x043, TOPSIS #1 L3_Ph200_Pl077_T325_Tt500_x046
+-> out\studies\s5_discounting\summary.md
