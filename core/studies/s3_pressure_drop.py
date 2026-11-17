@@ -5,13 +5,15 @@
 dp is a fraction of the inlet pressure on both recuperator sides, every cooler
 (CO2 side) and the heater. ID pressures remain the compressor inlet and outlet
 pressures; the recompressor discharges at the LTR cold-outlet pressure and the
-layout 6 pre-compressor at P_mid / (1 - dp) (helpers/builders.py). M0 is
-recalibrated at each level. Resumable.
+layout 6 pre-compressor at P_mid / (1 - dp) (helpers/builders.py). M0 is held
+at the baseline value and the reference stays L2_Ph200_Pl077_T340_Tt500 (its
+own dp re-solve) at every level. Resumable: cached solves are reused.
 """
 import statistics
 
-from core.studies.common import (DATA, STUDIES, baseline, calibrate, econ, pareto_png,
+from core.studies.common import (DATA, NAMED, STUDIES, baseline, econ, pareto_png,
                                  read_csv, sweep, table, task, winners, write_summary)
+from core.studies.s5_discounting import payback
 from core.studies.s1_cooler_pinch import changes, describe, write_econ
 from helpers.ids import parse_id
 
@@ -29,7 +31,10 @@ def main():
     for dp in DPS:
         stem = f"dp{dp * 100:g}pct"
         ok, bad = sweep([task(i, i, opts={"PRESSURE_DROP": dp}) for i in ids], FOLDER, stem)
-        ref, m0 = calibrate(ok)
+        # M0 held at the baseline value: recalibrating moves every mass (and payout) by one
+        # constant, which leaves the front and the min-max knee alone but shifts TOPSIS,
+        # whose vector normalisation is not shift-invariant.
+        ref, m0 = next(r for r in ok if r["ID"] == ref0["ID"]), m00
         main, strict = econ(ok, m0, ref["ID"])
         write_econ(main, FOLDER / f"econ_{stem}.csv")
         write_econ(strict, FOLDER / f"econ_{stem}_strict.csv")
@@ -67,14 +72,37 @@ def main():
           "recuperator sides, every cooler (CO2 side) and the heater. The ID pressures stay the "
           "compressor inlet and outlet pressures, so the turbine sees a smaller expansion ratio; "
           "the recompressor discharges at the LTR cold-outlet pressure and the layout 6 "
-          "pre-compressor at P_mid / (1 - dp). M0 recalibrated at each level. Rankings: main and "
-          "strict, layout 1 unranked.", "",
+          "pre-compressor at P_mid / (1 - dp). Rankings: main and strict, layout 1 unranked.", "",
+          f"**M0 is held at the baseline {m00:.3f} t at every dp level, with the baseline reference "
+          f"{ref0['ID']} (re-solved at each dp) for payback.** Recalibrating would pick a "
+          "different, high-UA layout 2 reference and drop M0 to about 20 t; that changes every "
+          "mass (and payout) by the same constant, which leaves the Pareto front and the knee "
+          "unchanged but moves TOPSIS, whose vector normalisation is not shift-invariant.", "",
           "## Efficiency loss per layout", "",
           "Best eta per layout (baseline -> with dp), its loss in percentage points, and the "
           "median loss over the designs feasible at that dp (same ID in both).", "",
           table(["case", "layout", "best eta", "best loss pp", "median loss pp", "best design", "feasible"], eff), "",
           "## Feasible counts", "", table(["case", "layout", "attempted", "feasible", "infeasible"], counts), ""]
     md += describe(sets)
+    pb = []
+    for s in sets:
+        rows = {r["ID"]: r for r in s["main"]}
+        rr = rows[ref0["ID"]]
+        for nm, id_ in NAMED.items():
+            if nm == "Reference":
+                continue
+            x = rows.get(id_)
+            if x is None:
+                pb.append([s["label"], nm, id_, "infeasible", "", "", "", ""])
+                continue
+            dc = x["hardware_usd"] - rr["hardware_usd"]
+            dv = x["electricity_usd_per_yr"] - rr["electricity_usd_per_yr"]
+            pb.append([s["label"], nm, id_, f"{dc / 1e6:.3f}", f"{dv / 1e6:.3f}",
+                       f"{x['payout_usd'] / 1e6:.3f}"]
+                      + [f"{payback(dc, dv, r):.2f}" for r in (0.0, 0.08)])
+    md += [f"## Incremental payback against the reference ({ref0['ID']}, same dp)", "",
+           table(["case", "design", "ID", "extra cost M$", "extra value M$/yr", "payout M$",
+                  "simple payback yr", "payback r=8% yr"], pb), ""]
     md += ["## Do the rankings change? (against dp 0)", ""]
     for s in sets[1:]:
         md += [f"**{s['label']}**", ""] + changes(sets[0], s) + [""]
