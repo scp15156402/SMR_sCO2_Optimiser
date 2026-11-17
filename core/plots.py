@@ -117,8 +117,16 @@ def pareto_plot(rows, name="pareto_payout_vs_mass.png", ylabel="10-year payout (
     for s in ("left", "bottom"):
         ax.spines[s].set_color("#999")
     ax.tick_params(labelsize=8, labelcolor="#444")
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.13), ncol=4, frameon=False,
-              fontsize=7.5, markerscale=1.5)
+    leg = ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.13), ncol=4, frameon=False,
+                    fontsize=7.5)
+    # Legend handles only (the data keep their sizes): layout markers enlarged and opaque,
+    # knee and star at a size that matches them.
+    for h, t in zip(leg.legend_handles, leg.get_texts()):
+        if hasattr(h, "set_sizes"):
+            label = t.get_text()
+            h.set_sizes([150 if "TOPSIS" in label or "Selected" in label else
+                         40 if label == "Knee" else 36])
+            h.set_alpha(1)
     fig.tight_layout()
     print(f"{name}: knee {knee['ID']}, TOPSIS #1 {top['ID']}")
     return _save(fig, name)
