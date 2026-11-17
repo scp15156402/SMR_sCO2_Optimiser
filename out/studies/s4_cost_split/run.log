@@ -1,0 +1,5 @@
+studies/s4_cost_split/pareto_ratio0.5.png: knee L6_Ph200_T335_Tt500_Pm079_Pe036_x038, TOPSIS #1 L6_Ph200_T335_Tt500_Pm079_Pe036_x038
+studies/s4_cost_split/pareto_ratio0.5_strict.png: knee L3_Ph200_Pl077_T330_Tt500_x043, TOPSIS #1 L3_Ph200_Pl077_T325_Tt500_x046
+studies/s4_cost_split/pareto_ratio8.png: knee L3_Ph200_Pl077_T325_Tt500_x044, TOPSIS #1 L3_Ph200_Pl077_T325_Tt500_x046
+studies/s4_cost_split/pareto_ratio8_strict.png: knee L3_Ph200_Pl077_T325_Tt500_x044, TOPSIS #1 L3_Ph200_Pl077_T325_Tt500_x045
+-> out\studies\s4_cost_split\summary.md
